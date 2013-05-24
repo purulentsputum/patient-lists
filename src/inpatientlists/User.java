@@ -4,13 +4,16 @@ package inpatientlists;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Date;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.JOptionPane;
 
 /**
  *
  * @author ross sellars
  * @created 20/05/2013 23:19
+ * @edited 24/05/2013 13:45 added SQL filter to name field and updated user table items
  */
 public class User {
     private String uid;
@@ -19,7 +22,15 @@ public class User {
     private String defaultUnit;
     private String defaultCons;
     private Boolean admin;
-    private Boolean active;
+    private Boolean active;             //used for users who have left
+    private Boolean locked;             //used for users with bad passwords etc
+    private Boolean limited;            // default uer can see list but do no more
+    private Date dateCreated;
+    private Date dateLastLogin;
+    private Date dateLastInvalidLogin;
+    private Integer numberValidLogins;
+    private Integer numberInvalidLogins; //number since last valid login
+    private Boolean newUser;            // flags if a user is new 
     
     public static User CurrentUser;
     
@@ -35,20 +46,22 @@ public class User {
     }
     private void loadDefaults(){
         uid="";
-        name="";
-        defaultWard="";
-        defaultUnit="";
-        defaultCons="SELLA";
+        name="NewUser";
+        defaultWard="none";
+        defaultUnit="none";
+        defaultCons="none";
         admin = false;
         active = false;
-        /*
-         * maybe the following
-         * Boolean locked;
-         * Date lastIncorrectLogin;
-         * Integer numberIncorrectLgins;
-         * Date lastCorrectLogin;
-         * 
-         */
+        locked = false; 
+        limited = true;
+        dateCreated = MyDates.CurrentDateTime();
+        dateLastLogin = MyDates.CurrentDateTime();
+        dateLastInvalidLogin = MyDates.CurrentDateTime();
+        numberValidLogins =0;
+        numberInvalidLogins =0;
+        newUser = true;
+        
+        
     }
     
     //getters
@@ -73,6 +86,33 @@ public class User {
     public Boolean isActive(){
         return active;
     }
+    public Boolean isLocked(){
+        return locked;
+    }
+    public Boolean isLimited(){
+        return limited;
+    }
+    public Date getDateCreated(){
+        return dateCreated;
+    }
+    public Date getDateLastLogin(){
+        return dateLastLogin;
+    }
+    public Date getDateLastInvalidLogin(){
+        return dateLastInvalidLogin;
+    }
+    public Integer getNumberValidLogins(){
+        return numberValidLogins;
+    }    
+    public Integer getNumberInvalidLogins(){
+        return numberInvalidLogins;
+    } 
+    public Boolean isNewUser(){
+        return newUser;
+    }
+        
+        
+        
     //setters
     public void setUID(String uid){
         this.uid = uid;
@@ -95,6 +135,42 @@ public class User {
     public void setActive(Boolean active){
         this.active = active;
     }
+    public void setLocked(Boolean locked){
+        this.locked=locked;
+    }
+    public void setLimited(Boolean limited){
+        this.limited = limited;
+    }
+    public void setDateCreated(Date dateCreated){
+        this.dateCreated=dateCreated;
+    }           
+    public void setDateLastLogin(Date dateLastLogin){
+        this.dateLastLogin=dateLastLogin;
+    }
+    public void setDateLastInvalidLogin(Date dateLastInvalidLogin){
+        this.dateLastInvalidLogin=dateLastInvalidLogin;
+    }
+    public void setNumberValidLogins(Integer numberValidLogins){
+        this.numberValidLogins=numberValidLogins;
+    }    
+    public void setNumberInvalidLogins(Integer numberInvalidLogins){
+        this.numberInvalidLogins=numberInvalidLogins;
+    } 
+    public void setNewUser(Boolean newUser){
+        this.newUser=newUser;
+    }
+    //
+    public void incrementNumberValidLogins(){
+        numberValidLogins++;
+        dateLastLogin = MyDates.CurrentDateTime();
+        saveData();
+    }    
+    public void incrementNumberInvalidLogins(){
+        numberInvalidLogins++;
+        dateLastInvalidLogin = MyDates.CurrentDateTime();
+        saveData();
+    }
+        
     //load and save
     private void loadData(String UID){
         /**
@@ -114,15 +190,25 @@ public class User {
             if (rs.next()){
                 // record exists
                 this.uid  = rs.getString("UID");
-                this.name = rs.getString("Name");
+                this.name = Utilities.ReplaceNonAlpha(rs.getString("Name"));
                 this.defaultWard = rs.getString("DefaultWard");
                 this.defaultUnit =rs.getString("DefaultUnit");
                 this.defaultCons =rs.getString("DefaultCons");  
                 this.admin = rs.getBoolean("Admin");
                 this.active = rs.getBoolean("Active");
+                this.locked = rs.getBoolean("Locked");
+                this.limited = rs.getBoolean("Limited");
+                this.dateCreated = rs.getTimestamp("Created");
+                this.dateLastLogin = rs.getTimestamp("LastValidLogin");
+                this.dateLastInvalidLogin = rs.getTimestamp("LastInvalidLogin");
+                this.numberValidLogins =rs.getInt("ValidLogins");
+                this.numberInvalidLogins =rs.getInt("InvalidLogins");
+                this.newUser=false;
             }else{
                 // new record
-                loadDefaults();               
+                loadDefaults(); 
+                this.uid=UID;
+                this.newUser=true;
             }
             rs.close();            
             
@@ -149,12 +235,19 @@ public class User {
             if (rs.next()){
                 // record exists
                 rs.updateString("UID", uid);
-                rs.updateString("Name",name);
+                rs.updateString("Name",Utilities.RemoveNonAlpha(name));
                 rs.updateString("DefaultWard",defaultWard);
                 rs.updateString("DefaultUnit",defaultUnit);
                 rs.updateString("DefaultCons",defaultCons);
                 rs.updateBoolean("Admin",admin);
-                rs.updateBoolean("Active",active);
+                rs.updateBoolean("Active",active);                               
+                rs.updateBoolean("Locked",locked);
+                rs.updateBoolean("Limited",limited);
+                rs.updateTimestamp("Created",MyDates.JavaDateTimeToSQLasDate(dateCreated));
+                rs.updateTimestamp("LastValidLogin",MyDates.JavaDateTimeToSQLasDate(dateLastLogin));
+                rs.updateTimestamp("LastInvalidLogin",MyDates.JavaDateTimeToSQLasDate(dateLastInvalidLogin));
+                rs.updateInt("ValidLogins",numberValidLogins);
+                rs.updateInt("InvalidLogins",numberInvalidLogins);
                                  
                 rs.updateRow();
             }else{
@@ -163,12 +256,19 @@ public class User {
                 rs.moveToInsertRow();
                 
                 rs.updateString("UID", uid);
-                rs.updateString("Name",name);
+                rs.updateString("Name",Utilities.RemoveNonAlpha(name));
                 rs.updateString("DefaultWard",defaultWard);
                 rs.updateString("DefaultUnit",defaultUnit);
                 rs.updateString("DefaultCons",defaultCons);
                 rs.updateBoolean("Admin",admin);
                 rs.updateBoolean("Active",active);
+                rs.updateBoolean("Locked",locked);
+                rs.updateBoolean("Limited",limited);
+                rs.updateTimestamp("Created",MyDates.JavaDateTimeToSQLasDate(dateCreated));
+                rs.updateTimestamp("LastValidLogin",MyDates.JavaDateTimeToSQLasDate(dateLastLogin));
+                rs.updateTimestamp("LastInvalidLogin",MyDates.JavaDateTimeToSQLasDate(dateLastInvalidLogin));
+                rs.updateInt("ValidLogins",numberValidLogins);
+                rs.updateInt("InvalidLogins",numberInvalidLogins);
                 
                 rs.insertRow();
             }
@@ -219,13 +319,19 @@ public class User {
                     LoopVar++;
                     retVar[LoopVar] = new User();
                     retVar[LoopVar].uid  = rs.getString("UID");
-                    retVar[LoopVar].name = rs.getString("Name");
+                    retVar[LoopVar].name = Utilities.ReplaceNonAlpha(rs.getString("Name"));
                     retVar[LoopVar].defaultWard = rs.getString("DefaultWard");
                     retVar[LoopVar].defaultUnit =rs.getString("DefaultUnit");
                     retVar[LoopVar].defaultCons =rs.getString("DefaultCons");  
                     retVar[LoopVar].admin = rs.getBoolean("Admin");
                     retVar[LoopVar].active = rs.getBoolean("Active");
-                           
+                    retVar[LoopVar].locked = rs.getBoolean("Locked");
+                    retVar[LoopVar].limited = rs.getBoolean("Limited");
+                    retVar[LoopVar].dateCreated = rs.getTimestamp("Created");
+                    retVar[LoopVar].dateLastLogin = rs.getTimestamp("LastValidLogin");
+                    retVar[LoopVar].dateLastInvalidLogin = rs.getTimestamp("LastInvalidLogin");
+                    retVar[LoopVar].numberValidLogins =rs.getInt("ValidLogins");
+                    retVar[LoopVar].numberInvalidLogins =rs.getInt("InvalidLogins");       
                 }
             }
             
@@ -239,6 +345,8 @@ public class User {
             
 
     }
+    
+   
     
     
 }

@@ -16,13 +16,21 @@ public class InpatientLists {
          if (DatabaseInpatients.ConnectToDatabase()) {
             // call login dialog box
             User.CurrentUser = new User();
-             //if valid login start inpatientList frame
-            java.awt.EventQueue.invokeLater(new Runnable() {
-
-                public void run() {
-                    new InpatientFrame().setVisible(true);
-                }
-            });
+            LoginDialog giveItToMe = new LoginDialog();
+            boolean howDidItGo = giveItToMe.ReturnCompleted();
+            if(howDidItGo){
+                // ok, open the main frame
+                //if valid login start inpatientList frame
+                java.awt.EventQueue.invokeLater(new Runnable() {
+                    public void run() {
+                        new InpatientFrame().setVisible(true);
+                    }
+                });
+            }else{
+                //no good show shut it down
+                System.exit(0);
+            } 
+            
     }
     }
 }

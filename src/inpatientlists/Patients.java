@@ -143,7 +143,7 @@ public class Patients {
                 rs.updateString("Surname",lastName);
                 rs.updateString("GivenNames",firstName);
                 rs.updateString("Gender",sex);
-                rs.updateDate("DateOfBirth",Utilities.JavaDateToSQLasDate(dob));
+                rs.updateDate("DateOfBirth",MyDates.JavaDateToSQLasDate(dob));
                 
                 rs.updateRow();
             }else{
@@ -155,7 +155,7 @@ public class Patients {
                 rs.updateString("Surname",lastName);
                 rs.updateString("GivenNames",firstName);
                 rs.updateString("Gender",sex);
-                rs.updateDate("DateOfBirth",Utilities.JavaDateToSQLasDate(dob));
+                rs.updateDate("DateOfBirth",MyDates.JavaDateToSQLasDate(dob));
                 
                 rs.insertRow();
             }

@@ -2,8 +2,10 @@
 
 package inpatientlists;
 
+import java.security.MessageDigest;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.logging.Level;
@@ -13,10 +15,11 @@ import java.util.logging.Logger;
  *
  * @author rosssellars
  * @created 20/05/2013 22:41
+ * @edited 24/05/2013 12:00 added static variables and generatekey()
  */
 public class Utilities {
-    
-    
+    public static final String NewLine  = System.getProperty("line.separator");
+       
     public static String[] loadWards(){
         /**
          * loads wards
@@ -100,18 +103,23 @@ public class Utilities {
             return retVar;
     }
     
-    
-    public static java.sql.Date JavaDateToSQLasDate (Date nDate) {
-        java.sql.Date  RetVar;
-        java.util.Calendar cal = Calendar.getInstance();
+    static String GenerateKey () {
+        /**
+         * This generates a key with length of 30 characters
+         */
 
-        cal.setTime(nDate);
-        cal.set(Calendar.HOUR_OF_DAY, 0);
-        cal.set(Calendar.MINUTE, 0);
-        cal.set(Calendar.SECOND, 0);
-        cal.set(Calendar.MILLISECOND, 0);
-        RetVar = new java.sql.Date(cal.getTime().getTime()); // your sql date
-        return RetVar;
+        String strRetVar = "";
+        String strComputerName = System.getenv("COMPUTERNAME");
+
+        Date dateNow =  new Date(); // current date/time
+
+        SimpleDateFormat df = new SimpleDateFormat("yyyyMMddHHmmss");
+        String strDate = df.format( dateNow );
+        String strRandom = Integer.toString((int)(Math.random()*100000000));
+        // create key and pad out incase computer name is short
+        strRetVar = strDate + strComputerName + strRandom + "0000000000";
+        // return first 30 characters eg 20111225000001QH00000000000001
+        return strRetVar.substring(0, 29);
     }
     static String RemoveNonAlpha (String strInput) {
         /**
@@ -195,6 +203,35 @@ public class Utilities {
         }
         return strResult;
     }
-    
+
+    public static String getSHA256(String strInput){
+        /*
+         * creates SHA2 hash from data provided
+         * this is used to compare records
+         */
+        String RetVar = "";
+        try {
+
+            MessageDigest md = MessageDigest.getInstance("SHA-512");
+            md.update(strInput.getBytes("UTF-8"));
+
+            byte byteData[] = md.digest();
+
+            StringBuffer hexString = new StringBuffer();
+
+            for (int i=0;i<byteData.length;i++) {
+    		String hex=Integer.toHexString(0xff & byteData[i]);
+   	     	if(hex.length()==1) hexString.append('0');
+   	     	hexString.append(hex);
+            }
+
+            RetVar = hexString.toString();
+
+        } catch (Exception ex) {
+            Logger.getLogger(Utilities.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
+        return RetVar;
+    }
     
 }

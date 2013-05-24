@@ -1,6 +1,7 @@
 
 package inpatientlists;
 
+import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
@@ -296,6 +297,11 @@ public class InpatientFrame extends javax.swing.JFrame {
         });
 
         jBtnSettings.setText("Settings");
+        jBtnSettings.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jBtnSettingsActionPerformed(evt);
+            }
+        });
 
         jButton1.setText("Weekend List");
 
@@ -454,6 +460,12 @@ public class InpatientFrame extends javax.swing.JFrame {
             // do nothing and ignore it (just like being a manager)
         }
     }//GEN-LAST:event_jBtnCloseActionPerformed
+
+    private void jBtnSettingsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jBtnSettingsActionPerformed
+        UserDialog fred = new UserDialog((JFrame)this);
+        boolean local = fred.ReturnCompleted();
+        //JOptionPane.showMessageDialog(  null, local);
+    }//GEN-LAST:event_jBtnSettingsActionPerformed
 
     /**
      * @param args the command line arguments
