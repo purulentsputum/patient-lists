@@ -146,6 +146,8 @@ public class InpatientFrame extends javax.swing.JFrame {
         //get the list
         patientList = PatientAdmissions.loadCurrentInpatientsFiltered(strSQL);
         
+        PatientAdmissions[] admList;
+                
          // initilize jTree
             DefaultTreeModel myTreeModel = (DefaultTreeModel)jTreePatients.getModel();
             DefaultMutableTreeNode root = new DefaultMutableTreeNode("Patients");
@@ -157,23 +159,19 @@ public class InpatientFrame extends javax.swing.JFrame {
                 patient = new DefaultMutableTreeNode(patientList[intLoopVar].getPatient().getOneLineDetails());
                 root.add (patient);
 
-                // child nodes, add only if addDetails flags <= 10 records
-                
-                    patient.add(new DefaultMutableTreeNode("Admissions"));
+                    patientDetail=new DefaultMutableTreeNode("Admissions");
 
-                    patient.add(new DefaultMutableTreeNode("Diagnoses"));
-                    // Diagnoses
+                        admList = new PatientAdmissions[0];
+                        admList = PatientAdmissions.loadAllPatientAdmissions(patientList[intLoopVar].getPatient().getURN());
+                        for(int i=0;i<admList.length;i++ ){
+                            patientDetail.add(new DefaultMutableTreeNode( admList[i].getAdmission().getAdmissionOneLine() ));
+                        }    
+                    patient.add(patientDetail);
+                    // Notes
                     patientDetail=new DefaultMutableTreeNode("Notes");
-
-               //         DiagnosisList = new String[1][5];
-               //         //JOptionPane.showMessageDialog(  null ,strPatientKey );
-//
-               //         DiagnosisList = DiagnosisForPatient.getPatientDiagnosisArray(strPatientList[intLoopVar][0]);
-                //        for (int i=0;i<DiagnosisList.length;i++ ){
-               //            patientDetail.add(new DefaultMutableTreeNode( DiagnosisList[i][1] + " "+DiagnosisList[i][2] ));
-                //        }
-                        patient.add(patientDetail);
-                    // visits
+                    patientDetail.add(new DefaultMutableTreeNode( "patient notes will go here" ));
+                    patient.add(patientDetail);
+                    
                     patient.add(new DefaultMutableTreeNode("Weekend categories"));
                     patient.add(new DefaultMutableTreeNode("Results"));
                     // etc etc
@@ -183,7 +181,7 @@ public class InpatientFrame extends javax.swing.JFrame {
             
             myTreeModel.setRoot(root);
     }
-    
+    //JOptionPane.showMessageDialog(  null ,strPatientKey );
 
     /**
      * This method is called from within the constructor to initialize the form.
@@ -462,7 +460,7 @@ public class InpatientFrame extends javax.swing.JFrame {
     }//GEN-LAST:event_jBtnCloseActionPerformed
 
     private void jBtnSettingsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jBtnSettingsActionPerformed
-        UserDialog fred = new UserDialog((JFrame)this);
+        UserDialog fred = new UserDialog((JFrame)this,User.CurrentUser);
         boolean local = fred.ReturnCompleted();
         //JOptionPane.showMessageDialog(  null, local);
     }//GEN-LAST:event_jBtnSettingsActionPerformed

@@ -138,6 +138,11 @@ public class Admissions {
     public String getUrn(){
         return urn;
     }
+    public String getAdmissionOneLine(){
+        String admDesc = new AdmissionType(admType).getAdmTypeDesc();
+        return "Adm: " + MyDates.ConvertDateToString(admDate) + " ("+bedDays+" days) | " + dischargeWard + " / " + bed +" | " + dischargeUnit
+                + " | "+ drTreating +" | " + admDesc;
+    }
     
     //setters
     public void setAdmDate(Date admDate){
