@@ -66,7 +66,7 @@ public class InpatientFrame extends javax.swing.JFrame {
         String[] tempArray = new String [consultantArray.length];
         for (int i=0;i<consultantArray.length;i++ ){
             tempArray[i]=consultantArray[i].getName();
-            if(User.CurrentUser.getConsultant().equals(consultantArray[i].getCode())){
+            if(User.CurrentUser.getConsultantCode().equals(consultantArray[i].getCode())){
                 defaultIndex = i;
             }
         }        

@@ -96,7 +96,7 @@ public class UserDialog extends JDialog{
         jCboUnit.setSelectedItem(Data.getUnit());
         
         for (int i = 0;i<consultantArray.length;i++){
-            if(User.CurrentUser.getConsultant().equals(consultantArray[i].getCode())){
+            if(User.CurrentUser.getConsultantCode().equals(consultantArray[i].getCode())){
                 jCboConsultant.setSelectedIndex(i);
             }
         }
@@ -147,7 +147,7 @@ public class UserDialog extends JDialog{
         for (int i = 0;i<consultantArray.length;i++){
             tempCount=i;
             jCboConsultant.insertItemAt(consultantArray[i].getName(), i);
-            if(User.CurrentUser.getConsultant().equals(consultantArray[i].getCode())){
+            if(User.CurrentUser.getConsultantCode().equals(consultantArray[i].getCode())){
                 defaultIndex = i;
             }
         }

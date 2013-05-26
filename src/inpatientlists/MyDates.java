@@ -261,7 +261,23 @@ public class MyDates {
     
     
     
-    
+ static Date incrementDate(Date nDate, double nNumIntervals, double IntervalsPerDay){
+        // this returns a date that is incremented by the selected amount
+        Date retVar;
+        
+        //get start date in millisecs
+        long startDate = nDate.getTime();
+        
+        //get days to add
+        double daysToIncrement = nNumIntervals / IntervalsPerDay;
+        double milisecsInaDay = (double)24*60*60*1000;
+        double milisecToIncrement = daysToIncrement * milisecsInaDay;
+        long endDate = startDate + (long)milisecToIncrement;
+        retVar = new Date(endDate);
+           
+        return retVar;
+       
+    }   
     
     
     

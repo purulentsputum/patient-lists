@@ -14,6 +14,7 @@ import javax.swing.JOptionPane;
  * @author ross sellars
  * @created 20/05/2013 23:19
  * @edited 24/05/2013 13:45 added SQL filter to name field and updated user table items
+ * @edited 26/05/2013 10:28 added defensive copy code
  */
 public class User {
     private String uid;
@@ -42,7 +43,21 @@ public class User {
     }
     User(User user){
         //defensive copy
-        
+        this.uid=user.getUID();
+        this.name=user.getName();
+        this.defaultWard=user.getWard();
+        this.defaultUnit=user.getUnit();
+        this.defaultCons=user.getConsultantCode();
+        this.admin = user.isAdmin();
+        this.active = user.isActive();
+        this.locked = user.isLocked(); 
+        this.limited = user.isLimited();
+        this.dateCreated = new Date(user.getDateCreated().getTime());
+        this.dateLastLogin = new Date(user.getDateLastLogin().getTime());
+        this.dateLastInvalidLogin = new Date(user.getDateLastInvalidLogin().getTime());
+        this.numberValidLogins =user.getNumberValidLogins();
+        this.numberInvalidLogins =user.getNumberInvalidLogins();
+        this.newUser = user.isNewUser();
     }
     private void loadDefaults(){
         uid="";
@@ -59,9 +74,7 @@ public class User {
         dateLastInvalidLogin = MyDates.CurrentDateTime();
         numberValidLogins =0;
         numberInvalidLogins =0;
-        newUser = true;
-        
-        
+        newUser = true;                
     }
     
     //getters
@@ -77,7 +90,7 @@ public class User {
     public String getUnit(){
         return defaultUnit;
     }
-    public String getConsultant(){
+    public String getConsultantCode(){
         return defaultCons;
     }
     public Boolean isAdmin(){
