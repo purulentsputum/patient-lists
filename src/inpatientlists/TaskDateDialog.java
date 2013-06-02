@@ -1,5 +1,4 @@
 
-
 package inpatientlists;
 
 import java.awt.Frame;
@@ -19,10 +18,7 @@ public class TaskDateDialog extends JDialog{
        
         task = new Task();
         StartUp();              
-    }
-
-   
-
+    }  
     
    public boolean ReturnCompleted() {
         setVisible(true);
@@ -34,25 +30,16 @@ public class TaskDateDialog extends JDialog{
         // the general initiation for frame
 
         initComponents();
-        PopulateWardCombo();
-        PopulateUnitCombo();
-        PopulateConsultantCombo();
+        PopulateTaskCombo();
+        
         pack();
         setLocationRelativeTo(null);
-        if(TaskDate.CurrentTaskDate.isAdmin()){
-            jChkAdmin.setEnabled(true);
-            jChkLimited.setEnabled(true);
-            jChkLocked.setEnabled(true);
-        }else{
-            jChkAdmin.setEnabled(false);
-            jChkLimited.setEnabled(false);
-            jChkLocked.setEnabled(false);
-        }
+        
     }
 
     private void FinishUp() {
         getResults();
-        Data.saveData();
+        task.saveData();
         retVar = true;
 
         setVisible(false); // returns control to initialting method (ReturnValue)
@@ -108,7 +95,28 @@ public class TaskDateDialog extends JDialog{
          
     }
     
-    
+    private void PopulateTaskCombo(){
+        
+        this.jCboTaskType.removeAllItems();
+        // generate list
+        int defaultIndex = -1; 
+        int tempCount=0;
+        
+        taskArray = TaskTypes.getArray();
+        
+        for (int i = 0;i<taskArray.length;i++){
+            tempCount=i;
+            jCboTaskType.insertItemAt(taskArray[i].getDesc(), i);
+            if(User.CurrentUser.getUnit().equals(taskArray[i])){
+                defaultIndex = i;
+            }
+        }        
+        
+        // mark default as selected        
+        this.jCboTaskType.setSelectedIndex(TaskTypes.getDefault());
+                        
+    }
+           
     private void initComponents() {
 
         jLblTaskType = new javax.swing.JLabel();
@@ -217,5 +225,6 @@ public class TaskDateDialog extends JDialog{
     private javax.swing.JTextField jTextField1;
     private Task task;
     private Boolean retVar;
-    
+    private TaskTypes[] taskArray;
+        
 }

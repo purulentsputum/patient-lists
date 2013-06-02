@@ -12,8 +12,8 @@ public class InpatientLists {
      * @param args the command line arguments
      */
     public static void main(String[] args) {
-        // connect to the database
-         if (DatabaseInpatients.ConnectToDatabase()) {
+        // connect to the database        
+        if (DatabaseInpatients.ConnectToDatabase()) {
             // call login dialog box
             User.CurrentUser = new User();
             LoginDialog giveItToMe = new LoginDialog();
@@ -31,6 +31,6 @@ public class InpatientLists {
                 System.exit(0);
             } 
             
-    }
+        }        
     }
 }

@@ -1,7 +1,11 @@
 
 package inpatientlists;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.Date;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -17,6 +21,7 @@ public class Admissions {
     private String admWard;
     private String bed;
     private Integer bedDays;
+    private Integer bedHours;
     private Date dateLastMoved;
     private String destination;
     private Date dischargeDate;
@@ -52,6 +57,7 @@ public class Admissions {
         admWard = "";
         bed = "";
         bedDays=0;
+        bedHours = 0;
         dateLastMoved = null;
         destination = "";
         dischargeDate = null;
@@ -93,6 +99,9 @@ public class Admissions {
     public Integer getBedDays(){
         return bedDays;
     }
+    public Integer getBedHours(){
+        return bedHours;
+    }
     public Date getDateLastMoved(){
         return dateLastMoved;
     }
@@ -132,6 +141,9 @@ public class Admissions {
     public String getDrTreating(){
         return drTreating;
     }
+    public String getReferingDoctorOneLine(){
+        return drReferringName + ", " + drReferringAddress + ", " + drReferringSuburb + "  " + drReferringPostCode; 
+    }
     public Integer getEpisodes(){
         return episodes;
     }
@@ -160,14 +172,17 @@ public class Admissions {
     public void setAdmUnit(String admUnit){
         this.admUnit=admUnit;
     }
-    public void setAdmWard(String admUnit){
-        this.admUnit=admUnit;
+    public void setAdmWard(String admWard){
+        this.admWard=admWard;
     }
     public void setBed(String bed){
         this.bed=bed;
     }
     public void setBedDays(Integer bedDays){
         this.bedDays=bedDays;
+    }
+    public void setBedHours(int bedHours){
+        this.bedHours=bedHours;
     }
     public void setDateLastMoved(Date dateLastMoved){
         this.dateLastMoved=dateLastMoved;
@@ -211,13 +226,218 @@ public class Admissions {
     public void setEpisodes(Integer episodes){
         this.episodes=episodes;
     }
-    public void setUrn(String urn){
+    public void setURN(String urn){
         this.urn=urn;
     }
     //load and save
     public void loadData(String admNum){
+        /**
+         * loads individual data
+         *  @param admNo patients UR Number
+         */
         
+        
+        String strSQL = "SELECT tbl_002_admissions.* " +
+                "FROM tbl_002_admissions  " +
+                "WHERE(tbl_002_admissions.AdmNo = '" + admNo + "');";
+        try {
+            // get resultset
+            DatabaseInpatients dbData = new DatabaseInpatients(strSQL,true);
+            ResultSet rs = dbData.getResultSet(); 
+            rs.beforeFirst();
+            if (rs.next()){
+                // record exists
+                                
+                admDate=rs.getDate("AdmDate");
+                admNo=rs.getString("AdmNo");
+                admTime=rs.getString("AdmTime");
+                admType=rs.getString("AdmType");
+                admUnit=rs.getString("AdmUnit");
+                admWard=rs.getString("AdmWard");
+                bed=rs.getString("Bed");                               
+                bedDays=rs.getInt("BedDays");
+                bedHours=rs.getInt("BedHours");
+                dateLastMoved=rs.getDate("DateLastMoved");
+                destination=rs.getString("Destination");
+                dischargeDate=rs.getDate("DischargeDate");
+                dischargeStatus=rs.getString("DischargeStatus");
+                dischargeTime=rs.getString("DischargeTime");
+                dischargeUnit=rs.getString("DischargeUnit");
+                dischargeWard=rs.getString("DischargeWard");
+                drAdmitting=rs.getString("DrAdmitting");
+                drReferringAddress=rs.getString("DrReferringAddress");
+                drReferringName=rs.getString("DrReferringName");
+                drReferringPostCode=rs.getString("DrReferringPostCode");
+                drReferringSuburb=rs.getString("DrReferringSuburb");
+                drTreating=rs.getString("DrTreating");
+                episodes=rs.getInt("Episodes");
+                urn=rs.getString("URN");
+                               
+            }else{
+                // new record
+                setDefaults();                
+            }
+            rs.close();            
+            
+        } catch (SQLException ex) {
+            Logger.getLogger("LoadAdmission").log(Level.SEVERE, null, ex);
+        }
+     
     }
+        public void saveData(){
+        /**
+         * saves current data 
+         * 
+         */
+        
+        String strSQL = "SELECT tbl_002_admissions.* " +
+                "FROM tbl_002_admissions  " +
+                "WHERE(tbl_002_admissions.AdmNo = '" + admNo + "');";
+        
+        try {
+            // get resultset
+            DatabaseInpatients dbData = new DatabaseInpatients(strSQL,false);
+            ResultSet rs = dbData.getResultSet(); 
+            rs.beforeFirst();
+            if (rs.next()){
+                // record exists
+                rs.updateDate("AdmDate", MyDates.JavaDateToSQLasDate(admDate));
+                rs.updateString("AdmNo",admNo);
+                rs.updateString("AdmTime",admTime);
+                rs.updateString("AdmType",admType);
+                rs.updateString("AdmUnit",admUnit);
+                rs.updateString("AdmWard",admWard);
+                rs.updateString("Bed",bed);                               
+                rs.updateInt("BedDays",bedDays);
+                rs.updateInt("BedHours",bedHours);
+                rs.updateDate("DateLastMoved",MyDates.JavaDateToSQLasDate(dateLastMoved));
+                rs.updateString("Destination",destination);
+                rs.updateDate("DischargeDate",MyDates.JavaDateToSQLasDate(dischargeDate));
+                rs.updateString("DischargeStatus",dischargeStatus);
+                rs.updateString("DischargeTime",dischargeTime);
+                rs.updateString("DischargeUnit",dischargeUnit);
+                rs.updateString("DischargeWard",dischargeWard);
+                rs.updateString("DrAdmitting",drAdmitting);
+                rs.updateString("DrReferringAddress",drReferringAddress);
+                rs.updateString("DrReferringName",drReferringName);
+                rs.updateString("DrReferringPostCode",drReferringPostCode);
+                rs.updateString("DrReferringSuburb",drReferringSuburb);
+                rs.updateString("DrTreating",drTreating);
+                rs.updateInt("Episodes",episodes);
+                rs.updateString("URN",urn);
+
+                             
+                rs.updateRow();
+            }else{
+                // new record
+                
+                rs.moveToInsertRow();
+                
+                rs.updateDate("AdmDate", MyDates.JavaDateToSQLasDate(admDate));
+                rs.updateString("AdmNo",admNo);
+                rs.updateString("AdmTime",admTime);
+                rs.updateString("AdmType",admType);
+                rs.updateString("AdmUnit",admUnit);
+                rs.updateString("AdmWard",admWard);
+                rs.updateString("Bed",bed);                               
+                rs.updateInt("BedDays",bedDays);
+                rs.updateInt("BedHours",bedHours);
+                rs.updateDate("DateLastMoved",MyDates.JavaDateToSQLasDate(dateLastMoved));
+                rs.updateString("Destination",destination);
+                rs.updateDate("DischargeDate",MyDates.JavaDateToSQLasDate(dischargeDate));
+                rs.updateString("DischargeStatus",dischargeStatus);
+                rs.updateString("DischargeTime",dischargeTime);
+                rs.updateString("DischargeUnit",dischargeUnit);
+                rs.updateString("DischargeWard",dischargeWard);
+                rs.updateString("DrAdmitting",drAdmitting);
+                rs.updateString("DrReferringAddress",drReferringAddress);
+                rs.updateString("DrReferringName",drReferringName);
+                rs.updateString("DrReferringPostCode",drReferringPostCode);
+                rs.updateString("DrReferringSuburb",drReferringSuburb);
+                rs.updateString("DrTreating",drTreating);
+                rs.updateInt("Episodes",episodes);
+                rs.updateString("URN",urn);
+                
+                rs.insertRow();
+            }
+            rs.close();
+            //PracticeLocality.LoadLocality(PracLocalityKey);
+            
+        } catch (SQLException ex) {
+            Logger.getLogger("saveAdmission").log(Level.SEVERE, null, ex);
+        }
+    }
+        
+    public static Admissions[] loadPatientAdmissions(String urn){
+        /**
+         * loads individual data
+         *  @param urn patients UR Number
+         */
+        
+          Admissions[] retVar = new  Admissions[0];
+        String strSQL = "SELECT tbl_002_admissions.* " +
+                "FROM tbl_002_admissions  " +
+                "WHERE(tbl_002_admissions.URN = '" + urn + "') " + 
+                "ORDER BY tbl_002_admissions.AdmDate DESC;";
+        try {
+            // get resultset
+            DatabaseInpatients dbData = new DatabaseInpatients(strSQL,true);
+            ResultSet rs = dbData.getResultSet(); 
+            
+             // set counter
+            rs.last();
+            int intRows = rs.getRow();
+            
+            if(intRows>0){
+                retVar = new  Admissions[intRows];
+
+                rs.beforeFirst(); // because rs.next() in while statement advances position
+                int LoopVar = -1;
+            
+                rs.beforeFirst();
+                while (rs.next()){
+                    LoopVar++;
+                    retVar[LoopVar] = new  Admissions();
+                               
+                    retVar[LoopVar].admDate=rs.getDate("AdmDate");
+                    retVar[LoopVar].admNo=rs.getString("AdmNo");
+                    retVar[LoopVar].admTime=rs.getString("AdmTime");
+                    retVar[LoopVar].admType=rs.getString("AdmType");
+                    retVar[LoopVar].admUnit=rs.getString("AdmUnit");
+                    retVar[LoopVar].admWard=rs.getString("AdmWard");
+                    retVar[LoopVar].bed=rs.getString("Bed");                               
+                    retVar[LoopVar].bedDays=rs.getInt("BedDays");
+                    retVar[LoopVar].bedHours=rs.getInt("BedHours");
+                    retVar[LoopVar].dateLastMoved=rs.getDate("DateLastMoved");
+                    retVar[LoopVar].destination=rs.getString("Destination");
+                    retVar[LoopVar].dischargeDate=rs.getDate("DischargeDate");
+                    retVar[LoopVar].dischargeStatus=rs.getString("DischargeStatus");
+                    retVar[LoopVar].dischargeTime=rs.getString("DischargeTime");
+                    retVar[LoopVar].dischargeUnit=rs.getString("DischargeUnit");
+                    retVar[LoopVar].dischargeWard=rs.getString("DischargeWard");
+                    retVar[LoopVar].drAdmitting=rs.getString("DrAdmitting");
+                    retVar[LoopVar].drReferringAddress=rs.getString("DrReferringAddress");
+                    retVar[LoopVar].drReferringName=rs.getString("DrReferringName");
+                    retVar[LoopVar].drReferringPostCode=rs.getString("DrReferringPostCode");
+                    retVar[LoopVar].drReferringSuburb=rs.getString("DrReferringSuburb");
+                    retVar[LoopVar].drTreating=rs.getString("DrTreating");
+                    retVar[LoopVar].episodes=rs.getInt("Episodes");
+                    retVar[LoopVar].urn=rs.getString("URN");
+                               
+                }
+            }
+            rs.close();            
+            
+        } catch (SQLException ex) {
+            Logger.getLogger("LoadAdmissionList").log(Level.SEVERE, null, ex);
+        }
+        
+        return retVar;
+     
+    }
+        
+        
+        
 }
 
 /*

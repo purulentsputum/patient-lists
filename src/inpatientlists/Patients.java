@@ -11,6 +11,7 @@ import java.util.logging.Logger;
  *
  * @author ross sellars
  * @created 20/05/2013 19:30
+ * @edited 01/06/2013 added defensive copy and urn to defaults
  */
 public class Patients {
     private String firstName;
@@ -34,7 +35,11 @@ public class Patients {
     }
     Patients (Patients newPatient){
         //defensive copy
-        
+        firstName =  newPatient.getFirstName();
+        lastName =  newPatient.getLastName();
+        sex =  newPatient.getSex();
+        dob =  new Date(newPatient.getDOB().getTime());
+        urn =  newPatient.getURN();
     }
     
     private void setDefaults(){
@@ -42,6 +47,7 @@ public class Patients {
         lastName = "";
         sex = "U";
         dob = null;
+        urn = "";
     }
     // getters
     public String getFirstName(){

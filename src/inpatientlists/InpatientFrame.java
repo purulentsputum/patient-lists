@@ -10,6 +10,7 @@ import javax.swing.tree.DefaultTreeModel;
  *
  * @author ross sellars
  * @created 20/05/2013 19:01
+ * @edited 02/06/2013 added counter to patients, 
  */
 public class InpatientFrame extends javax.swing.JFrame {
 
@@ -17,11 +18,32 @@ public class InpatientFrame extends javax.swing.JFrame {
      * Creates new form InpatientFrame
      */
     public InpatientFrame() {
+       startUp();
+    }
+    private void startUp(){
         initComponents();
         populateWards();
         populateUnits();
         populateConsultants();
+        populateCboFilter1();        
+        populateCboFilter2();        
+        populateCboFilter3();        
+        jBtnPtNotes.setVisible(false);
+        jBtnPtTask.setVisible(false);
+        setUserDefaults();
+        this.jTreePatients.setPreferredSize(null); //required to allow scroll bar to appear - crazy stuff!
         populatePatientList(getSQL());
+    }
+    private void setUserDefaults(){
+        //sets defaults on startup and after change to user data
+        
+        jLstWard.clearSelection();
+        jLstWard.setSelectedValue(User.CurrentUser.getWard(), true);
+        jLstUnit.clearSelection();
+        jLstUnit.setSelectedValue(User.CurrentUser.getUnit(),true);
+        jLstCons.clearSelection();
+        Doctors tempVar = new Doctors(User.CurrentUser.getConsultantCode());
+        jLstCons.setSelectedValue(tempVar.getName(), true);
         
     }
     private void populateWards(){
@@ -33,14 +55,10 @@ public class InpatientFrame extends javax.swing.JFrame {
             if(User.CurrentUser.getWard().equals(tempArray[i])){
                 defaultIndex = i;
             }
-        }        
-       
-        this.jLstWard.setListData(tempArray);
-        if(defaultIndex>-1){
-            //user has a valid default setting
-            this.jLstWard.setSelectedIndex(defaultIndex);
-        }
+        }             
+        this.jLstWard.setListData(tempArray);       
     }
+    
     private void populateUnits(){
         int defaultIndex = -1;
         // generate list
@@ -50,14 +68,10 @@ public class InpatientFrame extends javax.swing.JFrame {
             if(User.CurrentUser.getUnit().equals(tempArray[i])){
                 defaultIndex = i;
             }
-        }        
-       
-        this.jLstUnit.setListData(tempArray);
-        if(defaultIndex>-1){
-            //user has a valid default setting
-            this.jLstUnit.setSelectedIndex(defaultIndex);
-        }
+        }              
+        this.jLstUnit.setListData(tempArray);        
     }
+    
     private void populateConsultants(){
         int defaultIndex = -1;
         // generate list
@@ -69,15 +83,107 @@ public class InpatientFrame extends javax.swing.JFrame {
             if(User.CurrentUser.getConsultantCode().equals(consultantArray[i].getCode())){
                 defaultIndex = i;
             }
-        }        
-       
-        this.jLstCons.setListData(tempArray);
-        if(defaultIndex>-1){
-            //user has a valid default setting
-            this.jLstCons.setSelectedIndex(defaultIndex);
-        }
+        }               
+        this.jLstCons.setListData(tempArray);        
     }
     
+    private void populateCboFilter1(){
+       this.jCboFilter1.setVisible(false);
+       this.jCboFilter2.setVisible(false);
+       this.jCboFilter3.setVisible(false);
+       
+       String filterprev = (String)jCboFilter1.getSelectedItem();
+       jCboFilter1.removeAllItems();
+       int i=0;
+       jCboFilter1.insertItemAt("Ward", i++);
+       jCboFilter1.insertItemAt("Unit", i++);
+       jCboFilter1.insertItemAt("Consultant", i++);       
+       
+       if((filterprev.equals("Unit"))||(filterprev.equals("Consultant"))){
+           jCboFilter1.setSelectedItem(filterprev);
+       }else{
+           jCboFilter1.setSelectedItem("Ward");
+       }
+       
+       this.jCboFilter1.setVisible(true);
+       this.jCboFilter2.setVisible(true);
+       this.jCboFilter3.setVisible(true);
+              
+    }
+    private void populateCboFilter2(){
+       this.jCboFilter1.setVisible(false);
+       this.jCboFilter2.setVisible(false);
+       this.jCboFilter3.setVisible(false);
+       
+       String filterprev = (String)jCboFilter2.getSelectedItem(); 
+       jCboFilter2.removeAllItems();
+       
+       String filter1=Utilities.noNulls((String)jCboFilter1.getSelectedItem());
+       
+       int i=0;
+       if(!filter1.equals("Ward")){
+           jCboFilter2.insertItemAt("Ward", i++);
+           
+       }
+       if(!filter1.equals("Unit"))jCboFilter2.insertItemAt("Unit", i++);
+       if(!filter1.equals("Consultant"))jCboFilter2.insertItemAt("Consultant", i++);
+       jCboFilter2.insertItemAt("none", i);
+       
+       if((filterprev.equals(filter1))||(filter1.equals("none"))){
+           jCboFilter2.setSelectedItem("none");
+       }else{
+           if((filterprev.equals("Ward"))||(filterprev.equals("Unit"))||(filterprev.equals("Consultant"))){
+                jCboFilter2.setSelectedItem(filterprev);
+           }else{
+                jCboFilter2.setSelectedItem("none");
+           }
+       }
+             
+       this.jCboFilter1.setVisible(true);
+       this.jCboFilter2.setVisible(true);
+       this.jCboFilter3.setVisible(true);
+        
+    }
+    private void populateCboFilter3(){
+       this.jCboFilter1.setVisible(false);
+       this.jCboFilter2.setVisible(false);
+       this.jCboFilter3.setVisible(false);
+       
+       String filterprev = (String)jCboFilter3.getSelectedItem(); 
+       
+       jCboFilter3.removeAllItems();
+       
+       String filter1=Utilities.noNulls((String)jCboFilter1.getSelectedItem());
+       String filter2=Utilities.noNulls((String)jCboFilter2.getSelectedItem());
+       if (filter2.equals("none")){
+           jCboFilter3.insertItemAt("none", 0);
+           jCboFilter3.setSelectedItem("none");
+       }  else{     
+            //JOptionPane.showMessageDialog(  null ,filter1 +"-"+ filter2);
+            int i=0;
+
+
+            if(!((filter1.equals("Ward"))||(filter2.equals("Ward"))))jCboFilter3.insertItemAt("Ward", i++);
+            if(!((filter1.equals("Unit"))||(filter2.equals("Unit"))))jCboFilter3.insertItemAt("Unit", i++);
+            if(!((filter1.equals("Consultant"))||(filter2.equals("Consultant"))))jCboFilter3.insertItemAt("Consultant", i++);
+            jCboFilter3.insertItemAt("none", i);
+
+            if((filterprev.equals(filter1))||(filterprev.equals(filter2))){
+                jCboFilter3.setSelectedItem("none");
+            }else{
+                if((filterprev.equals("Ward"))||(filterprev.equals("Unit"))||(filterprev.equals("Consultant"))){
+                     jCboFilter3.setSelectedItem(filterprev);
+                }else{
+                     jCboFilter3.setSelectedItem("none");
+                }
+            }
+       }
+       
+       this.jCboFilter1.setVisible(true);
+       this.jCboFilter2.setVisible(true);
+       this.jCboFilter3.setVisible(true);
+       
+    }
     private String getWardSQLpart(){
         String retVar="";
         for(int i = 0; i < this.jLstWard.getModel().getSize(); i++){
@@ -111,6 +217,48 @@ public class InpatientFrame extends javax.swing.JFrame {
         }
         return retVar;
     }
+    private String getSortSQLpart(){
+        String retVar="";
+        String tempVar="";
+        
+        tempVar = getSortSingleFilter(Utilities.noNulls((String)jCboFilter1.getSelectedItem()));
+        if ((retVar.length()>1)&&(tempVar.length()>1) ) retVar = retVar + ", ";
+        retVar = retVar + tempVar;
+        
+        tempVar = getSortSingleFilter(Utilities.noNulls((String)jCboFilter2.getSelectedItem()));
+        if ((retVar.length()>1)&&(tempVar.length()>1) ) retVar = retVar + ", ";
+        retVar = retVar + tempVar;
+        
+        tempVar = getSortSingleFilter(Utilities.noNulls((String)jCboFilter3.getSelectedItem()));
+        if ((retVar.length()>1)&&(tempVar.length()>1) ) retVar = retVar + ", ";
+        retVar = retVar + tempVar;
+        
+        if (retVar.length()>1){
+            retVar = " ORDER BY " + retVar;
+        }
+        return retVar;
+        
+    }
+    private String getSortSingleFilter(String item){
+        String retVar="";
+        switch (item){
+            case "none":
+                break;
+            case "Ward":                
+                retVar = retVar + "tbl_002_Admissions.DischargeWard, Tbl_002_Admissions.Bed";
+                break;
+            case "Unit":
+                retVar = retVar + "tbl_002_Admissions.DischargeUnit";
+                break;
+            case "Consultant":
+                retVar = retVar + "tbl_002_Admissions.DrTreating";
+                break;
+            default:
+                break;
+        }
+        
+        return retVar;
+    }
     private String getSQL(){
         String retVar;
         String ward = getWardSQLpart();
@@ -128,14 +276,14 @@ public class InpatientFrame extends javax.swing.JFrame {
                     "FROM Tbl_001_Patients " +
                     "INNER JOIN Tbl_002_Admissions ON Tbl_001_Patients.URN = Tbl_002_Admissions.URN " +
                     "WHERE (" + tempSQL + ") " + 
-                    "ORDER BY Tbl_002_Admissions.DischargeWard, Tbl_002_Admissions.Bed;";
+                    getSortSQLpart() + ";";
 
         }else{
             // no filter inplace
             retVar = "SELECT Tbl_002_Admissions.*, Tbl_001_Patients.* " +
                 "FROM Tbl_001_Patients " + 
                 "INNER JOIN Tbl_002_Admissions ON Tbl_001_Patients.URN = Tbl_002_Admissions.URN " +
-                "ORDER BY Tbl_002_Admissions.DischargeWard, Tbl_002_Admissions.Bed;";
+                getSortSQLpart() + ";";
         }
         
         return retVar;
@@ -146,7 +294,9 @@ public class InpatientFrame extends javax.swing.JFrame {
         //get the list
         patientList = PatientAdmissions.loadCurrentInpatientsFiltered(strSQL);
         
-        PatientAdmissions[] admList;
+        Admissions[] admList;
+        Note note;
+        String tempVar;
                 
          // initilize jTree
             DefaultTreeModel myTreeModel = (DefaultTreeModel)jTreePatients.getModel();
@@ -155,31 +305,63 @@ public class InpatientFrame extends javax.swing.JFrame {
             DefaultMutableTreeNode patientDetail;
             
             for (int intLoopVar=0 ; intLoopVar < patientList.length ; intLoopVar++) {
-
-                patient = new DefaultMutableTreeNode(patientList[intLoopVar].getPatient().getOneLineDetails());
+                tempVar = Integer.toString(intLoopVar+1) + ": " + patientList[intLoopVar].getPatient().getOneLineDetails();
+                patient = new DefaultMutableTreeNode(tempVar);
                 root.add (patient);
 
                     patientDetail=new DefaultMutableTreeNode("Admissions");
 
-                        admList = new PatientAdmissions[0];
-                        admList = PatientAdmissions.loadAllPatientAdmissions(patientList[intLoopVar].getPatient().getURN());
+                        admList = new Admissions[0];
+                        admList = Admissions.loadPatientAdmissions( patientList[intLoopVar].getPatient().getURN());
                         for(int i=0;i<admList.length;i++ ){
-                            patientDetail.add(new DefaultMutableTreeNode( admList[i].getAdmission().getAdmissionOneLine() ));
+                            patientDetail.add(new DefaultMutableTreeNode( admList[i].getAdmissionOneLine() ));
                         }    
                     patient.add(patientDetail);
-                    // Notes
-                    patientDetail=new DefaultMutableTreeNode("Notes");
-                    patientDetail.add(new DefaultMutableTreeNode( "patient notes will go here" ));
-                    patient.add(patientDetail);
+                    // Notes                    
+                    note = new Note(patientList[intLoopVar].getPatient()); 
+                    tempVar = note.getNote();
+                    if (tempVar.length()>5){
+                        patientDetail=new DefaultMutableTreeNode("Notes");
+                        patientDetail.add(new DefaultMutableTreeNode( note.getNote() ));
+                        patientDetail.add(new DefaultMutableTreeNode( "edited by: " + note.getEditedBy().getName() +" on "+ MyDates.ConvertDateTimeToString(note.getEditedDate()) ));
+                        patient.add(patientDetail);
+                    }
                     
-                    patient.add(new DefaultMutableTreeNode("Weekend categories"));
-                    patient.add(new DefaultMutableTreeNode("Results"));
+                    
+                    //Tasks
+                    patient.add(new DefaultMutableTreeNode("Tasks"));
+                    
+                    //GP
+                    patientDetail=new DefaultMutableTreeNode("Refering Doctor");
+                    patientDetail.add(new DefaultMutableTreeNode(patientList[intLoopVar].getAdmission().getReferingDoctorOneLine() ));
+                    patient.add(patientDetail);
                     // etc etc
                 
 
             }
             
             myTreeModel.setRoot(root);
+    }
+    
+     private int GetNodeIndex() {
+
+        // get the full path eg [Patients, 1:Bloggs,joe]
+        String strNodePath = jTreePatients.getAnchorSelectionPath().toString();
+        // remove the root node [Patients,
+        strNodePath = strNodePath.substring(10);
+        // find the  colon : separator
+        int RetVar = 0;
+        int index = strNodePath.indexOf(":");
+        // if a colon is present
+        if (index >1) {
+            String strItem = strNodePath.substring (0,index).trim();
+            try {
+                RetVar = Integer.parseInt(strItem);
+            }catch (Exception e) {
+                RetVar = 0;
+            }
+        }
+        return RetVar;
     }
     //JOptionPane.showMessageDialog(  null ,strPatientKey );
 
@@ -192,6 +374,7 @@ public class InpatientFrame extends javax.swing.JFrame {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        jPanel3 = new javax.swing.JPanel();
         jPanel1 = new javax.swing.JPanel();
         jScrollPane1 = new javax.swing.JScrollPane();
         jLstWard = new javax.swing.JList();
@@ -208,11 +391,28 @@ public class InpatientFrame extends javax.swing.JFrame {
         jPanel2 = new javax.swing.JPanel();
         jBtnClose = new javax.swing.JButton();
         jBtnSettings = new javax.swing.JButton();
-        jButton1 = new javax.swing.JButton();
-        jButton2 = new javax.swing.JButton();
+        jBtnAllTasks = new javax.swing.JButton();
+        jBtnExport = new javax.swing.JButton();
         jButton3 = new javax.swing.JButton();
-        jScrollPane5 = new javax.swing.JScrollPane();
+        jBtnPtNotes = new javax.swing.JButton();
+        jBtnPtTask = new javax.swing.JButton();
+        jPanel4 = new javax.swing.JPanel();
+        jCboFilter1 = new javax.swing.JComboBox();
+        jCboFilter2 = new javax.swing.JComboBox();
+        jCboFilter3 = new javax.swing.JComboBox();
+        jScrollPane4 = new javax.swing.JScrollPane();
         jTreePatients = new javax.swing.JTree();
+
+        javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
+        jPanel3.setLayout(jPanel3Layout);
+        jPanel3Layout.setHorizontalGroup(
+            jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 100, Short.MAX_VALUE)
+        );
+        jPanel3Layout.setVerticalGroup(
+            jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 100, Short.MAX_VALUE)
+        );
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -288,6 +488,8 @@ public class InpatientFrame extends javax.swing.JFrame {
         jPanel2.setBorder(javax.swing.BorderFactory.createEtchedBorder());
 
         jBtnClose.setText("Close");
+        jBtnClose.setMaximumSize(new java.awt.Dimension(97, 23));
+        jBtnClose.setMinimumSize(new java.awt.Dimension(97, 23));
         jBtnClose.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jBtnCloseActionPerformed(evt);
@@ -295,17 +497,53 @@ public class InpatientFrame extends javax.swing.JFrame {
         });
 
         jBtnSettings.setText("Settings");
+        jBtnSettings.setMaximumSize(new java.awt.Dimension(97, 23));
+        jBtnSettings.setMinimumSize(new java.awt.Dimension(97, 23));
         jBtnSettings.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jBtnSettingsActionPerformed(evt);
             }
         });
 
-        jButton1.setText("Weekend List");
+        jBtnAllTasks.setText("Task List");
+        jBtnAllTasks.setActionCommand("Task List");
+        jBtnAllTasks.setMaximumSize(new java.awt.Dimension(97, 23));
+        jBtnAllTasks.setMinimumSize(new java.awt.Dimension(97, 23));
+        jBtnAllTasks.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jBtnAllTasksActionPerformed(evt);
+            }
+        });
 
-        jButton2.setText("Export List");
+        jBtnExport.setText("Export List");
+        jBtnExport.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jBtnExportActionPerformed(evt);
+            }
+        });
 
         jButton3.setText("Admin");
+        jButton3.setMaximumSize(new java.awt.Dimension(97, 23));
+        jButton3.setMinimumSize(new java.awt.Dimension(97, 23));
+        jButton3.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton3ActionPerformed(evt);
+            }
+        });
+
+        jBtnPtNotes.setText("Patient Notes");
+        jBtnPtNotes.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jBtnPtNotesActionPerformed(evt);
+            }
+        });
+
+        jBtnPtTask.setText("Patient Tasks");
+        jBtnPtTask.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jBtnPtTaskActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
@@ -313,30 +551,91 @@ public class InpatientFrame extends javax.swing.JFrame {
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel2Layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                    .addComponent(jButton3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(jBtnSettings, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(jBtnClose, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                .addGap(18, 18, 18)
+                .addComponent(jBtnClose, javax.swing.GroupLayout.DEFAULT_SIZE, 97, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(jBtnExport, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 97, Short.MAX_VALUE)
+                    .addComponent(jBtnAllTasks, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(jBtnSettings, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addComponent(jButton1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(jButton2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addComponent(jBtnPtNotes, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(jBtnPtTask, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(jButton3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap())
         );
         jPanel2Layout.setVerticalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel2Layout.createSequentialGroup()
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addComponent(jButton3)
+                .addContainerGap()
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jBtnAllTasks, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jBtnPtNotes))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jBtnSettings)
-                    .addComponent(jButton1))
+                    .addComponent(jBtnExport)
+                    .addComponent(jBtnPtTask))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jBtnClose)
-                    .addComponent(jButton2))
-                .addContainerGap())
+                    .addComponent(jBtnSettings, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jButton3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jBtnClose, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
+
+        jPanel4.setBorder(javax.swing.BorderFactory.createTitledBorder("Sort Order"));
+
+        jCboFilter1.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Ward", "Unit", "Consultant", "none" }));
+        jCboFilter1.setSelectedIndex(3);
+        jCboFilter1.setToolTipText("");
+        jCboFilter1.setMinimumSize(new java.awt.Dimension(97, 20));
+        jCboFilter1.setPreferredSize(new java.awt.Dimension(97, 20));
+        jCboFilter1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jCboFilter1ActionPerformed(evt);
+            }
+        });
+
+        jCboFilter2.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Ward", "Unit", "Consultant", "none" }));
+        jCboFilter2.setSelectedIndex(3);
+        jCboFilter2.setMinimumSize(new java.awt.Dimension(97, 20));
+        jCboFilter2.setPreferredSize(new java.awt.Dimension(97, 20));
+        jCboFilter2.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jCboFilter2ActionPerformed(evt);
+            }
+        });
+
+        jCboFilter3.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Ward", "Unit", "Consultant", "none" }));
+        jCboFilter3.setSelectedIndex(3);
+        jCboFilter3.setToolTipText("");
+        jCboFilter3.setMinimumSize(new java.awt.Dimension(97, 20));
+        jCboFilter3.setPreferredSize(new java.awt.Dimension(97, 20));
+        jCboFilter3.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jCboFilter3ActionPerformed(evt);
+            }
+        });
+
+        javax.swing.GroupLayout jPanel4Layout = new javax.swing.GroupLayout(jPanel4);
+        jPanel4.setLayout(jPanel4Layout);
+        jPanel4Layout.setHorizontalGroup(
+            jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel4Layout.createSequentialGroup()
+                .addGap(8, 8, 8)
+                .addComponent(jCboFilter1, javax.swing.GroupLayout.PREFERRED_SIZE, 97, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(jCboFilter2, 0, 95, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jCboFilter3, javax.swing.GroupLayout.PREFERRED_SIZE, 97, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(2, 2, 2))
+        );
+        jPanel4Layout.setVerticalGroup(
+            jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                .addComponent(jCboFilter1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(jCboFilter2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(jCboFilter3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
         );
 
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
@@ -346,7 +645,6 @@ public class InpatientFrame extends javax.swing.JFrame {
             .addGroup(jPanel1Layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addGroup(jPanel1Layout.createSequentialGroup()
                         .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
@@ -362,7 +660,12 @@ public class InpatientFrame extends javax.swing.JFrame {
                         .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(jScrollPane3)
                             .addComponent(jLblCons, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(jBtnClrCons, javax.swing.GroupLayout.DEFAULT_SIZE, 97, Short.MAX_VALUE))))
+                            .addComponent(jBtnClrCons, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jPanel4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGap(0, 26, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         jPanel1Layout.setVerticalGroup(
@@ -383,12 +686,21 @@ public class InpatientFrame extends javax.swing.JFrame {
                     .addComponent(jBtnClrWard)
                     .addComponent(jBtnClrUnit)
                     .addComponent(jBtnClrCons))
-                .addGap(18, 18, 18)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(jPanel4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap(153, Short.MAX_VALUE))
         );
 
-        jScrollPane5.setViewportView(jTreePatients);
+        jTreePatients.setPreferredSize(null);
+        jTreePatients.setRootVisible(false);
+        jTreePatients.addTreeSelectionListener(new javax.swing.event.TreeSelectionListener() {
+            public void valueChanged(javax.swing.event.TreeSelectionEvent evt) {
+                jTreePatientsValueChanged(evt);
+            }
+        });
+        jScrollPane4.setViewportView(jTreePatients);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -397,18 +709,17 @@ public class InpatientFrame extends javax.swing.JFrame {
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(18, 18, 18)
-                .addComponent(jScrollPane5, javax.swing.GroupLayout.PREFERRED_SIZE, 435, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(25, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(jScrollPane4, javax.swing.GroupLayout.DEFAULT_SIZE, 414, Short.MAX_VALUE)
+                .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(jScrollPane5))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jScrollPane4, javax.swing.GroupLayout.PREFERRED_SIZE, 556, javax.swing.GroupLayout.PREFERRED_SIZE)))
         );
 
         pack();
@@ -460,10 +771,78 @@ public class InpatientFrame extends javax.swing.JFrame {
     }//GEN-LAST:event_jBtnCloseActionPerformed
 
     private void jBtnSettingsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jBtnSettingsActionPerformed
-        UserDialog fred = new UserDialog((JFrame)this,User.CurrentUser);
-        boolean local = fred.ReturnCompleted();
+        UserDialog dialog = new UserDialog((JFrame)this,User.CurrentUser);
+        boolean dialogResult = dialog.ReturnCompleted();
+        if (dialogResult) {
+            //refresh view
+            setUserDefaults();
+            populatePatientList(getSQL());
+        }
         //JOptionPane.showMessageDialog(  null, local);
     }//GEN-LAST:event_jBtnSettingsActionPerformed
+
+    private void jTreePatientsValueChanged(javax.swing.event.TreeSelectionEvent evt) {//GEN-FIRST:event_jTreePatientsValueChanged
+        //make patient buttons visible
+        if(User.CurrentUser.isLimited()){
+            this.jBtnPtNotes.setVisible(false);
+            this.jBtnPtTask.setVisible(false);
+        }else{
+            this.jBtnPtNotes.setVisible(true);
+            this.jBtnPtTask.setVisible(true);
+        }
+        
+    }//GEN-LAST:event_jTreePatientsValueChanged
+
+    private void jBtnPtNotesActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jBtnPtNotesActionPerformed
+        int node = GetNodeIndex();
+        if (node>0){
+            //patient selected
+            
+            NoteDialog dialog = new NoteDialog((JFrame)this, patientList[node-1].getPatient());
+            boolean dialogResult = dialog.ReturnCompleted();
+        }
+        //JOptionPane.showMessageDialog(  null ,node );
+        
+    }//GEN-LAST:event_jBtnPtNotesActionPerformed
+
+    private void jBtnPtTaskActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jBtnPtTaskActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_jBtnPtTaskActionPerformed
+
+    private void jBtnAllTasksActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jBtnAllTasksActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_jBtnAllTasksActionPerformed
+
+    private void jBtnExportActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jBtnExportActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_jBtnExportActionPerformed
+
+    private void jButton3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton3ActionPerformed
+        
+    }//GEN-LAST:event_jButton3ActionPerformed
+
+    private void jCboFilter2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jCboFilter2ActionPerformed
+         if (jCboFilter2.isVisible()){
+             populateCboFilter3();
+             
+         }
+        
+    }//GEN-LAST:event_jCboFilter2ActionPerformed
+
+    private void jCboFilter3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jCboFilter3ActionPerformed
+       if (jCboFilter3.isVisible()){
+         populatePatientList(getSQL());  
+       }
+        
+    }//GEN-LAST:event_jCboFilter3ActionPerformed
+
+    private void jCboFilter1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jCboFilter1ActionPerformed
+        if (jCboFilter1.isVisible()){
+            populateCboFilter2();                
+             
+        }
+        
+    }//GEN-LAST:event_jCboFilter1ActionPerformed
 
     /**
      * @param args the command line arguments
@@ -500,14 +879,19 @@ public class InpatientFrame extends javax.swing.JFrame {
         });
     }
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton jBtnAllTasks;
     private javax.swing.JButton jBtnClose;
     private javax.swing.JButton jBtnClrCons;
     private javax.swing.JButton jBtnClrUnit;
     private javax.swing.JButton jBtnClrWard;
+    private javax.swing.JButton jBtnExport;
+    private javax.swing.JButton jBtnPtNotes;
+    private javax.swing.JButton jBtnPtTask;
     private javax.swing.JButton jBtnSettings;
-    private javax.swing.JButton jButton1;
-    private javax.swing.JButton jButton2;
     private javax.swing.JButton jButton3;
+    private javax.swing.JComboBox jCboFilter1;
+    private javax.swing.JComboBox jCboFilter2;
+    private javax.swing.JComboBox jCboFilter3;
     private javax.swing.JLabel jLblCons;
     private javax.swing.JLabel jLblUnit;
     private javax.swing.JLabel jLblWard;
@@ -516,9 +900,12 @@ public class InpatientFrame extends javax.swing.JFrame {
     private javax.swing.JList jLstWard;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
+    private javax.swing.JPanel jPanel3;
+    private javax.swing.JPanel jPanel4;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JScrollPane jScrollPane3;
+    private javax.swing.JScrollPane jScrollPane4;
     private javax.swing.JScrollPane jScrollPane5;
     private javax.swing.JTree jTreePatients;
     // End of variables declaration//GEN-END:variables

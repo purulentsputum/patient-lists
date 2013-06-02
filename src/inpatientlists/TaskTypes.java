@@ -12,6 +12,7 @@ public class TaskTypes {
     private String desc;
     
     private static TaskTypes[] typeArray;
+    private static int defaultTask;
     
     TaskTypes(){
         loadData();
@@ -44,6 +45,9 @@ public class TaskTypes {
     public static TaskTypes[] getArray(){
         return typeArray;
     }
+    public static int getDefault(){
+        return defaultTask;
+    }
     public static String getDesc(String key){
         String retVar="";
         for (int i=0;i<typeArray.length;i++){
@@ -68,6 +72,8 @@ public class TaskTypes {
         typeArray[4].desc="Handover";
         typeArray[5].key ="T";
         typeArray[5].desc="To do";
+        
+        defaultTask=5;
         
     }
 }

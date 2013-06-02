@@ -116,7 +116,7 @@ public class PatientAdmissions {
                     retVar[LoopVar].getAdmission().setDrReferringSuburb(rs.getString("DrReferringSuburb"));
                     retVar[LoopVar].getAdmission().setDrTreating(rs.getString("DrTreating"));
                     retVar[LoopVar].getAdmission().setEpisodes(rs.getInt("Episodes"));
-                    retVar[LoopVar].getAdmission().setUrn(rs.getString("URN"));
+                    retVar[LoopVar].getAdmission().setURN(rs.getString("URN"));
                                                  
                 }
             }

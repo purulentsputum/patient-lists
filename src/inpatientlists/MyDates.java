@@ -36,12 +36,17 @@ public class MyDates {
         java.sql.Date  RetVar;
         java.util.Calendar cal = Calendar.getInstance();
 
-        cal.setTime(nDate);
-        cal.set(Calendar.HOUR_OF_DAY, 0);
-        cal.set(Calendar.MINUTE, 0);
-        cal.set(Calendar.SECOND, 0);
-        cal.set(Calendar.MILLISECOND, 0);
-        RetVar = new java.sql.Date(cal.getTime().getTime()); // your sql date
+        if(nDate != null){
+           cal.setTime(nDate);
+            cal.set(Calendar.HOUR_OF_DAY, 0);
+            cal.set(Calendar.MINUTE, 0);
+            cal.set(Calendar.SECOND, 0);
+            cal.set(Calendar.MILLISECOND, 0);
+            RetVar = new java.sql.Date(cal.getTime().getTime()); // your sql date 
+        }else{
+            RetVar = null;
+        }
+        
         return RetVar;
     }
     public static java.sql.Timestamp JavaDateTimeToSQLasDate (java.util.Date nDateTime) {

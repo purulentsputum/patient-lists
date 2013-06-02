@@ -11,6 +11,7 @@ import javax.swing.JPanel;
  *
  * @author ross sellars
  * @created 24/05/2013 12:08
+ * @edited 02/06/2013 fixed getResults() to include default search items
  */
 public class UserDialog extends JDialog{
     public UserDialog(Frame aFrame) {
@@ -75,11 +76,13 @@ public class UserDialog extends JDialog{
             jChkLimited.setEnabled(false);
             jChkLocked.setEnabled(false);
         }
+        
     }
 
     private void FinishUp() {
         getResults();
         Data.saveData();
+        User.CurrentUser = new User(Data);
         RetVar = true;
 
         setVisible(false); // returns control to initialting method (ReturnValue)
@@ -115,14 +118,25 @@ public class UserDialog extends JDialog{
     private void getResults(){
         /*
          * loads data into Data 
-         */
+         */        
         //User
         Data.setName((jTxtName.getText()));
         Data.setAdmin(jChkAdmin.isSelected());
         Data.setLocked(jChkLocked.isSelected());
-        Data.setLimited(jChkLimited.isSelected());
+        Data.setLimited(jChkLimited.isSelected());        
+        //get ward and unit directly from combobox
+        Data.setDefaultUnit((String)this.jCboUnit.getSelectedItem());        
+        Data.setDefaultWard((String)this.jCboWard.getSelectedItem());
+        //consultant from array - watch for 'none' as not in array
+        int index = this.jCboConsultant.getSelectedIndex();
+        if (index <consultantArray.length){
+            //within bounds
+            Data.setDefaultConsultant(consultantArray[index].getCode());
+        }else{
+            //out of bounts which means none selected
+            Data.setDefaultConsultant("none");
+        }
         
-       
         
     }
     private void setCalculatedValues(){

@@ -234,4 +234,26 @@ public class Utilities {
         return RetVar;
     }
     
+    public static Integer convertStringToInt(String value){
+        
+        int retVar = 0;
+        
+        try{
+            retVar = Integer.parseInt(value);
+        }catch (Exception ex){
+            retVar = 0;
+        }
+        return retVar;
+    }
+    
+    public static String noNulls(String value){
+        String retVar;
+        if (value!=null){
+            retVar = value;
+        }else{
+            retVar = "";
+        }
+        return retVar;
+    }
+    
 }
