@@ -11,6 +11,7 @@ import javax.swing.tree.DefaultTreeModel;
  * @author ross sellars
  * @created 20/05/2013 19:01
  * @edited 02/06/2013 added counter to patients, 
+ * @edited 07/06/2013 fixed filters and added surname
  */
 public class InpatientFrame extends javax.swing.JFrame {
 
@@ -22,17 +23,34 @@ public class InpatientFrame extends javax.swing.JFrame {
     }
     private void startUp(){
         initComponents();
+        
+        jLstCons.setVisible(false);
+        jLstWard.setVisible(false);
+        jLstUnit.setVisible(false);
         populateWards();
         populateUnits();
         populateConsultants();
+        jLstCons.setVisible(true);
+        jLstWard.setVisible(true);
+        jLstUnit.setVisible(true);
+        hideFilters(true);
         populateCboFilter1();        
         populateCboFilter2();        
-        populateCboFilter3();        
+        populateCboFilter3();
+        hideFilters(false);
         jBtnPtNotes.setVisible(false);
         jBtnPtTask.setVisible(false);
+        if(User.CurrentUser.isLimited()){
+            this.jBtnAllTasks.setVisible(false);
+            this.jBtnExport.setVisible(false);
+        }
         setUserDefaults();
         this.jTreePatients.setPreferredSize(null); //required to allow scroll bar to appear - crazy stuff!
         populatePatientList(getSQL());
+        
+        pack();
+        setLocationRelativeTo(null);
+        
     }
     private void setUserDefaults(){
         //sets defaults on startup and after change to user data
@@ -88,32 +106,23 @@ public class InpatientFrame extends javax.swing.JFrame {
     }
     
     private void populateCboFilter1(){
-       this.jCboFilter1.setVisible(false);
-       this.jCboFilter2.setVisible(false);
-       this.jCboFilter3.setVisible(false);
        
        String filterprev = (String)jCboFilter1.getSelectedItem();
        jCboFilter1.removeAllItems();
        int i=0;
-       jCboFilter1.insertItemAt("Ward", i++);
-       jCboFilter1.insertItemAt("Unit", i++);
-       jCboFilter1.insertItemAt("Consultant", i++);       
+       jCboFilter1.insertItemAt(ward, i++);
+       jCboFilter1.insertItemAt(unit, i++);
+       jCboFilter1.insertItemAt(consultant, i++);
+       jCboFilter1.insertItemAt(surname, i++);  
        
-       if((filterprev.equals("Unit"))||(filterprev.equals("Consultant"))){
+       if((filterprev.equals(unit))||(filterprev.equals(consultant))){
            jCboFilter1.setSelectedItem(filterprev);
        }else{
-           jCboFilter1.setSelectedItem("Ward");
+           jCboFilter1.setSelectedItem(ward);
        }
-       
-       this.jCboFilter1.setVisible(true);
-       this.jCboFilter2.setVisible(true);
-       this.jCboFilter3.setVisible(true);
-              
+                     
     }
     private void populateCboFilter2(){
-       this.jCboFilter1.setVisible(false);
-       this.jCboFilter2.setVisible(false);
-       this.jCboFilter3.setVisible(false);
        
        String filterprev = (String)jCboFilter2.getSelectedItem(); 
        jCboFilter2.removeAllItems();
@@ -121,33 +130,26 @@ public class InpatientFrame extends javax.swing.JFrame {
        String filter1=Utilities.noNulls((String)jCboFilter1.getSelectedItem());
        
        int i=0;
-       if(!filter1.equals("Ward")){
-           jCboFilter2.insertItemAt("Ward", i++);
+       if(!filter1.equals(ward)){
+           jCboFilter2.insertItemAt(ward, i++);
            
        }
-       if(!filter1.equals("Unit"))jCboFilter2.insertItemAt("Unit", i++);
-       if(!filter1.equals("Consultant"))jCboFilter2.insertItemAt("Consultant", i++);
-       jCboFilter2.insertItemAt("none", i);
+       if(!filter1.equals(unit))jCboFilter2.insertItemAt(unit, i++);
+       if(!filter1.equals(consultant))jCboFilter2.insertItemAt(consultant, i++);
+       if(!filter1.equals(surname))jCboFilter2.insertItemAt(surname, i++);
+       jCboFilter2.insertItemAt(none, i);
        
-       if((filterprev.equals(filter1))||(filter1.equals("none"))){
-           jCboFilter2.setSelectedItem("none");
+       if((filterprev.equals(filter1))||(filter1.equals(none))){
+           jCboFilter2.setSelectedItem(none);
        }else{
-           if((filterprev.equals("Ward"))||(filterprev.equals("Unit"))||(filterprev.equals("Consultant"))){
+           if((filterprev.equals(ward))||(filterprev.equals(unit))||(filterprev.equals(consultant))){
                 jCboFilter2.setSelectedItem(filterprev);
            }else{
-                jCboFilter2.setSelectedItem("none");
+                jCboFilter2.setSelectedItem(none);
            }
        }
-             
-       this.jCboFilter1.setVisible(true);
-       this.jCboFilter2.setVisible(true);
-       this.jCboFilter3.setVisible(true);
-        
     }
     private void populateCboFilter3(){
-       this.jCboFilter1.setVisible(false);
-       this.jCboFilter2.setVisible(false);
-       this.jCboFilter3.setVisible(false);
        
        String filterprev = (String)jCboFilter3.getSelectedItem(); 
        
@@ -155,53 +157,61 @@ public class InpatientFrame extends javax.swing.JFrame {
        
        String filter1=Utilities.noNulls((String)jCboFilter1.getSelectedItem());
        String filter2=Utilities.noNulls((String)jCboFilter2.getSelectedItem());
-       if (filter2.equals("none")){
-           jCboFilter3.insertItemAt("none", 0);
-           jCboFilter3.setSelectedItem("none");
+       if (filter2.equals(none)){
+           jCboFilter3.insertItemAt(none, 0);
+           jCboFilter3.setSelectedItem(none);
        }  else{     
             //JOptionPane.showMessageDialog(  null ,filter1 +"-"+ filter2);
             int i=0;
 
 
-            if(!((filter1.equals("Ward"))||(filter2.equals("Ward"))))jCboFilter3.insertItemAt("Ward", i++);
-            if(!((filter1.equals("Unit"))||(filter2.equals("Unit"))))jCboFilter3.insertItemAt("Unit", i++);
-            if(!((filter1.equals("Consultant"))||(filter2.equals("Consultant"))))jCboFilter3.insertItemAt("Consultant", i++);
-            jCboFilter3.insertItemAt("none", i);
+            if(!((filter1.equals(ward))||(filter2.equals(ward))))jCboFilter3.insertItemAt(ward, i++);
+            if(!((filter1.equals(unit))||(filter2.equals(unit))))jCboFilter3.insertItemAt(unit, i++);
+            if(!((filter1.equals(consultant))||(filter2.equals(consultant))))jCboFilter3.insertItemAt(consultant, i++);
+            jCboFilter3.insertItemAt(none, i);
 
             if((filterprev.equals(filter1))||(filterprev.equals(filter2))){
-                jCboFilter3.setSelectedItem("none");
+                jCboFilter3.setSelectedItem(none);
             }else{
-                if((filterprev.equals("Ward"))||(filterprev.equals("Unit"))||(filterprev.equals("Consultant"))){
+                if((filterprev.equals(ward))||(filterprev.equals(unit))||(filterprev.equals(consultant))){
                      jCboFilter3.setSelectedItem(filterprev);
                 }else{
-                     jCboFilter3.setSelectedItem("none");
+                     jCboFilter3.setSelectedItem(none);
                 }
             }
        }
-       
-       this.jCboFilter1.setVisible(true);
-       this.jCboFilter2.setVisible(true);
-       this.jCboFilter3.setVisible(true);
-       
+    }
+    private void hideFilters(Boolean hide){
+        this.jCboFilter1.setVisible(!hide);
+        this.jCboFilter2.setVisible(!hide);
+        this.jCboFilter3.setVisible(!hide);
     }
     private String getWardSQLpart(){
         String retVar="";
+        String tempVar;
         for(int i = 0; i < this.jLstWard.getModel().getSize(); i++){
             if(this.jLstWard.isSelectedIndex(i)){
                 // is selected, next test if first element, and if not use AND
+                tempVar = (String)this.jLstWard.getModel().getElementAt(i);
                 if (retVar.length()>1){ retVar = retVar + " OR ";}
-                retVar = retVar + "((tbl_002_Admissions.DischargeWard) = '" + (String)this.jLstWard.getModel().getElementAt(i) + "')";
-            }
+                retVar = retVar + "((tbl_002_Admissions.DischargeWard) = '" + tempVar + "')";
+                if (sqlDesc.length()>1){ sqlDesc = sqlDesc + ", "; }
+                sqlDesc = sqlDesc + tempVar;
+            }            
         }
         return retVar;
     }
     private String getUnitSQLpart(){
         String retVar="";
+        String tempVar;
         for(int i = 0; i < this.jLstUnit.getModel().getSize(); i++){
             if(this.jLstUnit.isSelectedIndex(i)){
                 // is selected, next test if first element, and if not use AND
+                tempVar = (String)this.jLstUnit.getModel().getElementAt(i);
                 if (retVar.length()>1){ retVar = retVar + " OR ";}
-                retVar = retVar + "((tbl_002_Admissions.DischargeUnit) = '" + (String)this.jLstUnit.getModel().getElementAt(i) + "')";
+                retVar = retVar + "((tbl_002_Admissions.DischargeUnit) = '" + tempVar + "')";
+                if (sqlDesc.length()>1){ sqlDesc = sqlDesc + ", "; }
+                sqlDesc = sqlDesc + tempVar;
             }
         }
         return retVar;
@@ -213,6 +223,8 @@ public class InpatientFrame extends javax.swing.JFrame {
                 // is selected, next test if first element, and if not use AND
                 if (retVar.length()>1){ retVar = retVar + " OR ";}
                 retVar = retVar + "((tbl_002_Admissions.DrTreating) = '" + consultantArray[i].getCode() + "')";
+                if (sqlDesc.length()>1){ sqlDesc = sqlDesc + ", "; }
+                sqlDesc = sqlDesc + consultantArray[i].getName() ;
             }
         }
         return retVar;
@@ -242,17 +254,19 @@ public class InpatientFrame extends javax.swing.JFrame {
     private String getSortSingleFilter(String item){
         String retVar="";
         switch (item){
-            case "none":
+            case none:
                 break;
-            case "Ward":                
+            case ward:                
                 retVar = retVar + "tbl_002_Admissions.DischargeWard, Tbl_002_Admissions.Bed";
                 break;
-            case "Unit":
+            case unit:
                 retVar = retVar + "tbl_002_Admissions.DischargeUnit";
                 break;
-            case "Consultant":
+            case consultant:
                 retVar = retVar + "tbl_002_Admissions.DrTreating";
                 break;
+            case surname:
+                retVar = retVar + "tbl_001_Patients.Surname";
             default:
                 break;
         }
@@ -261,10 +275,13 @@ public class InpatientFrame extends javax.swing.JFrame {
     }
     private String getSQL(){
         String retVar;
+        sqlDesc = ""; //plain text of query
         String ward = getWardSQLpart();
         String unit = getUnitSQLpart();
         String cons = getConsultantSQLpart();
-        
+        if (sqlDesc.length()>0){sqlDesc = " (" + sqlDesc + ")";}
+        sqlDesc = "Inpatient List" + sqlDesc;
+                
         String tempSQL = new String(ward);
         if ((tempSQL.length()>1)&&(unit.length())>1) {tempSQL = tempSQL + " AND ";}
        tempSQL = tempSQL + unit;
@@ -393,9 +410,10 @@ public class InpatientFrame extends javax.swing.JFrame {
         jBtnSettings = new javax.swing.JButton();
         jBtnAllTasks = new javax.swing.JButton();
         jBtnExport = new javax.swing.JButton();
-        jButton3 = new javax.swing.JButton();
+        jBtnAdmin = new javax.swing.JButton();
         jBtnPtNotes = new javax.swing.JButton();
         jBtnPtTask = new javax.swing.JButton();
+        jBtnAbout = new javax.swing.JButton();
         jPanel4 = new javax.swing.JPanel();
         jCboFilter1 = new javax.swing.JComboBox();
         jCboFilter2 = new javax.swing.JComboBox();
@@ -486,6 +504,8 @@ public class InpatientFrame extends javax.swing.JFrame {
         });
 
         jPanel2.setBorder(javax.swing.BorderFactory.createEtchedBorder());
+        jPanel2.setMinimumSize(new java.awt.Dimension(327, 116));
+        jPanel2.setPreferredSize(new java.awt.Dimension(327, 116));
 
         jBtnClose.setText("Close");
         jBtnClose.setMaximumSize(new java.awt.Dimension(97, 23));
@@ -506,7 +526,6 @@ public class InpatientFrame extends javax.swing.JFrame {
         });
 
         jBtnAllTasks.setText("Task List");
-        jBtnAllTasks.setActionCommand("Task List");
         jBtnAllTasks.setMaximumSize(new java.awt.Dimension(97, 23));
         jBtnAllTasks.setMinimumSize(new java.awt.Dimension(97, 23));
         jBtnAllTasks.addActionListener(new java.awt.event.ActionListener() {
@@ -522,12 +541,12 @@ public class InpatientFrame extends javax.swing.JFrame {
             }
         });
 
-        jButton3.setText("Admin");
-        jButton3.setMaximumSize(new java.awt.Dimension(97, 23));
-        jButton3.setMinimumSize(new java.awt.Dimension(97, 23));
-        jButton3.addActionListener(new java.awt.event.ActionListener() {
+        jBtnAdmin.setText("Admin");
+        jBtnAdmin.setMaximumSize(new java.awt.Dimension(97, 23));
+        jBtnAdmin.setMinimumSize(new java.awt.Dimension(97, 23));
+        jBtnAdmin.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton3ActionPerformed(evt);
+                jBtnAdminActionPerformed(evt);
             }
         });
 
@@ -545,13 +564,22 @@ public class InpatientFrame extends javax.swing.JFrame {
             }
         });
 
+        jBtnAbout.setText("About");
+        jBtnAbout.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jBtnAboutActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
         jPanel2Layout.setHorizontalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel2Layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jBtnClose, javax.swing.GroupLayout.DEFAULT_SIZE, 97, Short.MAX_VALUE)
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jBtnClose, javax.swing.GroupLayout.DEFAULT_SIZE, 97, Short.MAX_VALUE)
+                    .addComponent(jBtnAbout, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                     .addComponent(jBtnExport, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 97, Short.MAX_VALUE)
@@ -561,7 +589,7 @@ public class InpatientFrame extends javax.swing.JFrame {
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                     .addComponent(jBtnPtNotes, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(jBtnPtTask, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(jButton3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addComponent(jBtnAdmin, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
         );
         jPanel2Layout.setVerticalGroup(
@@ -570,7 +598,8 @@ public class InpatientFrame extends javax.swing.JFrame {
                 .addContainerGap()
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jBtnAllTasks, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jBtnPtNotes))
+                    .addComponent(jBtnPtNotes)
+                    .addComponent(jBtnAbout))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jBtnExport)
@@ -578,12 +607,13 @@ public class InpatientFrame extends javax.swing.JFrame {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jBtnSettings, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jButton3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jBtnAdmin, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jBtnClose, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap(20, Short.MAX_VALUE))
         );
 
         jPanel4.setBorder(javax.swing.BorderFactory.createTitledBorder("Sort Order"));
+        jPanel4.setMinimumSize(new java.awt.Dimension(327, 43));
 
         jCboFilter1.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Ward", "Unit", "Consultant", "none" }));
         jCboFilter1.setSelectedIndex(3);
@@ -663,8 +693,8 @@ public class InpatientFrame extends javax.swing.JFrame {
                             .addComponent(jBtnClrCons, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
                     .addGroup(jPanel1Layout.createSequentialGroup()
                         .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jPanel4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(jPanel4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                         .addGap(0, 26, Short.MAX_VALUE)))
                 .addContainerGap())
         );
@@ -693,7 +723,6 @@ public class InpatientFrame extends javax.swing.JFrame {
                 .addContainerGap(153, Short.MAX_VALUE))
         );
 
-        jTreePatients.setPreferredSize(null);
         jTreePatients.setRootVisible(false);
         jTreePatients.addTreeSelectionListener(new javax.swing.event.TreeSelectionListener() {
             public void valueChanged(javax.swing.event.TreeSelectionEvent evt) {
@@ -710,7 +739,7 @@ public class InpatientFrame extends javax.swing.JFrame {
                 .addContainerGap()
                 .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(jScrollPane4, javax.swing.GroupLayout.DEFAULT_SIZE, 414, Short.MAX_VALUE)
+                .addComponent(jScrollPane4, javax.swing.GroupLayout.DEFAULT_SIZE, 485, Short.MAX_VALUE)
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -727,8 +756,9 @@ public class InpatientFrame extends javax.swing.JFrame {
 
     private void jLstWardValueChanged(javax.swing.event.ListSelectionEvent evt) {//GEN-FIRST:event_jLstWardValueChanged
          //if(jLstWard.getSelectedIndex()>-1) {}
-         populatePatientList(getSQL());
-         
+        if(jLstWard.isVisible()){
+            populatePatientList(getSQL());
+        } 
     }//GEN-LAST:event_jLstWardValueChanged
 
     private void jBtnClrWardActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jBtnClrWardActionPerformed
@@ -744,11 +774,15 @@ public class InpatientFrame extends javax.swing.JFrame {
     }//GEN-LAST:event_jBtnClrConsActionPerformed
 
     private void jLstUnitValueChanged(javax.swing.event.ListSelectionEvent evt) {//GEN-FIRST:event_jLstUnitValueChanged
-        populatePatientList(getSQL());
+        if(jLstUnit.isVisible()){
+            populatePatientList(getSQL());
+        }
     }//GEN-LAST:event_jLstUnitValueChanged
 
     private void jLstConsValueChanged(javax.swing.event.ListSelectionEvent evt) {//GEN-FIRST:event_jLstConsValueChanged
-        populatePatientList(getSQL());
+        if(jLstCons.isVisible()){
+            populatePatientList(getSQL());
+        }
     }//GEN-LAST:event_jLstConsValueChanged
 
     private void jBtnCloseActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jBtnCloseActionPerformed
@@ -815,34 +849,73 @@ public class InpatientFrame extends javax.swing.JFrame {
 
     private void jBtnExportActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jBtnExportActionPerformed
         // TODO add your handling code here:
+        Object[] options = {"Word", "XML", "HTML"};
+        String retVar = (String)JOptionPane.showInputDialog(
+                (JFrame)this,
+                "Would you like to save your list as:",
+                "Export Data",
+                JOptionPane.QUESTION_MESSAGE,
+                null,     //do not use a custom Icon
+                options,  //the fields fot the combo
+                "Word"); //default 
+        if ((retVar != null)&&(retVar.length()>0)){
+            switch (retVar){
+                case "Word":
+                    ExportList.Word(patientList, sqlDesc);
+                    break;
+                case "XML":
+                    ExportList.XML(patientList, sqlDesc);
+                    break;
+                case "HTML":
+                    ExportList.HTML(patientList, sqlDesc);
+                    break;
+                default:
+                    JOptionPane.showMessageDialog(null, "You selected " + retVar + " - but I haven't got around to this yet");
+                    break;
+            }
+            
+        }
     }//GEN-LAST:event_jBtnExportActionPerformed
 
-    private void jButton3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton3ActionPerformed
-        
-    }//GEN-LAST:event_jButton3ActionPerformed
+    private void jBtnAdminActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jBtnAdminActionPerformed
+        if(User.CurrentUser.isAdmin()){
+            String topt = JOptionPane.showInputDialog(null, "Enter your One Time Password (TOTP):");
+            
+            JOptionPane.showMessageDialog((JFrame)this, topt, "Inpatient List Program", JOptionPane.INFORMATION_MESSAGE);
+        }
+    }//GEN-LAST:event_jBtnAdminActionPerformed
 
     private void jCboFilter2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jCboFilter2ActionPerformed
          if (jCboFilter2.isVisible()){
-             populateCboFilter3();
-             
+            hideFilters(true);
+            populateCboFilter3();
+            hideFilters(false);
+            populatePatientList(getSQL());
          }
         
     }//GEN-LAST:event_jCboFilter2ActionPerformed
 
     private void jCboFilter3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jCboFilter3ActionPerformed
        if (jCboFilter3.isVisible()){
-         populatePatientList(getSQL());  
+            populatePatientList(getSQL());
        }
         
     }//GEN-LAST:event_jCboFilter3ActionPerformed
 
     private void jCboFilter1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jCboFilter1ActionPerformed
         if (jCboFilter1.isVisible()){
-            populateCboFilter2();                
-             
+            hideFilters(true);
+            populateCboFilter2();  
+            populateCboFilter3();
+            hideFilters(false);
+            populatePatientList(getSQL());             
         }
         
     }//GEN-LAST:event_jCboFilter1ActionPerformed
+
+    private void jBtnAboutActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jBtnAboutActionPerformed
+        JOptionPane.showMessageDialog((JFrame)this, "Another program brought to you by....", "Inpatient List Program", JOptionPane.INFORMATION_MESSAGE);
+    }//GEN-LAST:event_jBtnAboutActionPerformed
 
     /**
      * @param args the command line arguments
@@ -879,6 +952,8 @@ public class InpatientFrame extends javax.swing.JFrame {
         });
     }
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton jBtnAbout;
+    private javax.swing.JButton jBtnAdmin;
     private javax.swing.JButton jBtnAllTasks;
     private javax.swing.JButton jBtnClose;
     private javax.swing.JButton jBtnClrCons;
@@ -888,7 +963,6 @@ public class InpatientFrame extends javax.swing.JFrame {
     private javax.swing.JButton jBtnPtNotes;
     private javax.swing.JButton jBtnPtTask;
     private javax.swing.JButton jBtnSettings;
-    private javax.swing.JButton jButton3;
     private javax.swing.JComboBox jCboFilter1;
     private javax.swing.JComboBox jCboFilter2;
     private javax.swing.JComboBox jCboFilter3;
@@ -906,9 +980,14 @@ public class InpatientFrame extends javax.swing.JFrame {
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JScrollPane jScrollPane3;
     private javax.swing.JScrollPane jScrollPane4;
-    private javax.swing.JScrollPane jScrollPane5;
     private javax.swing.JTree jTreePatients;
     // End of variables declaration//GEN-END:variables
     private Doctors[] consultantArray; 
     private PatientAdmissions[] patientList;
+    private String sqlDesc="";
+    private final String ward = "Ward";
+    private final String unit = "Unit";
+    private final String consultant = "Consultant";
+    private final String surname ="Surname";
+    private final String none = "none";
 }

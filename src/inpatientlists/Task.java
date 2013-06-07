@@ -13,17 +13,17 @@ import java.util.logging.Logger;
  *
  * @author ross sellars
  * @created 26/05/2013 08:35
+ * @edited 07/06/2013 to contain full task info for a single task/day
  */
 public class Task {
     private String key;
-    private Date firstDate;
-    private Date lastDate;
+    private Date taskDate;
     private String urn;
     private TaskTypes taskType;
-    private String tasks;
+    private String taskDesc;
     private User createdBy;
     private User editedBy;
-    private User CompletedBy;
+    private User completedBy;
     //private User taskedTo;
     private Date dateCreated;
     private Date dateEdited;
@@ -38,34 +38,45 @@ public class Task {
     }
     Task (Task value){
         //defensive copy
+        key = value.getKey();
+        taskDate=new Date(value.getDate().getTime());
+        urn=value.getURN();
+        taskDesc=value.getTaskDesc();
+        taskType = new TaskTypes(value.getTaskType());
+        createdBy= new User(value.getCreatedBy());
+        editedBy=new User(value.getEditedBy());
+        completedBy = new User(value.getCompletedBy());
+        dateCreated=new Date(value.getDateCreated().getTime());
+        dateEdited=new Date(value.getDateEdited().getTime());
+        dateCompleted = new Date(value.getDateCompleted().getTime());
+        completed = value.isCompleted();
     }
     private void loadDefaults(){
         key = Utilities.GenerateKey();
-        firstDate=MyDates.CurrentDate();
-        lastDate=firstDate;
+        taskDate=MyDates.CurrentDate();
         urn="";
-        tasks=" ";
+        taskDesc=" ";
         taskType = new TaskTypes();
         createdBy= new User(User.CurrentUser.getUID());
         editedBy=new User(User.CurrentUser.getUID());
+        completedBy = new User();
         dateCreated=MyDates.CurrentDate();
         dateEdited=MyDates.CurrentDate();
+        dateCompleted = null;
+        completed = false;
     }
     //getters
     public final String getKey(){
         return key;
     }
-    public final Date getFirstDate(){
-        return firstDate;
-    }
-    public Date getLastDate(){
-        return lastDate;
+    public final Date getDate(){
+        return taskDate;
     }
     public String getURN(){
         return urn;
     }
-    public String getTasks(){
-        return tasks;
+    public String getTaskDesc(){
+        return taskDesc;
     }
     public TaskTypes getTaskType(){
         return taskType;
@@ -76,21 +87,27 @@ public class Task {
     public Date getDateEdited(){
         return dateEdited;
     }
+    public Date getDateCompleted(){
+        return dateEdited;
+    }
     public User getCreatedBy(){
         return createdBy;
     }
     public User getEditedBy(){
         return editedBy;
     }
+    public User getCompletedBy(){
+        return completedBy;
+    }
+    public Boolean isCompleted(){
+        return completed;
+    }
     //setters
     public void setKey(String key){
         this.key=key;
     }
-    public void setFirstDate(Date firstDate){
-        this.firstDate = new Date(firstDate.getTime());
-    }
-    public void setLastDate(Date lastDate){
-        this.lastDate = new Date(lastDate.getTime());
+    public void setDate(Date taskDate){
+        this.taskDate = new Date(taskDate.getTime());
     }
     public void setURN(String urn){
         this.urn = urn;
@@ -101,14 +118,17 @@ public class Task {
     public void setTaskType(String key){
         this.taskType=new TaskTypes(key);
     }
-    public void setTasks(String tasks){
-        this.tasks = tasks;
+    public void setTaskDesc(String tasks){
+        this.taskDesc = tasks;
     }
     public void setDateCreated(Date dateCreated){
         this.dateCreated = new Date (dateCreated.getTime());
     }
     public void setDateEdited(Date dateEdited){
         this.dateEdited = new Date(dateEdited.getTime());
+    }
+    public void setDateCompleted(Date dateCompleted){
+        this.dateCompleted = new Date(dateCompleted.getTime());
     }
     public void setCreatedBy(User user){
         this.createdBy = new User(user);
@@ -121,6 +141,15 @@ public class Task {
     }
     public void setEditedBy(String uid){
         this.editedBy = new User(uid);
+    }
+    public void setCompletedBy(User user){
+        this.completedBy = new User(user);
+    }
+    public void setCompletedBy(String uid){
+        this.completedBy = new User(uid);
+    }
+    public void setCompleted(Boolean completed){
+        this.completed = completed;
     }
     // other
     public void loadData(String key){
@@ -141,15 +170,17 @@ public class Task {
             if (rs.next()){
                 // record exists
                 this.key  = rs.getString("Key");
-                this.firstDate = rs.getDate("DateFirst");
-                this.lastDate = rs.getDate("DateLast");
+                this.taskDate = rs.getDate("TaskDate");
                 this.urn = rs.getString("URN");
                 this.taskType = new TaskTypes(rs.getString("TaskType"));
-                this.tasks = Utilities.ReplaceNonAlpha(rs.getString("Tasks"));
+                this.taskDesc = Utilities.ReplaceNonAlpha(rs.getString("TaskDesc"));
                 this.createdBy = new User(rs.getString("UIDCreatedBy"));
                 this.editedBy = new User(rs.getString("UIDEditedBy"));
+                this.completedBy = new User(rs.getString("UIDCompletedBy"));
                 this.dateCreated = rs.getTimestamp("DateCreated");
                 this.dateEdited = rs.getTimestamp("DateEdited");
+                this.dateCompleted = rs.getTimestamp("DateEdited");
+                this.completed = rs.getBoolean("Completed");
                                                 
             }else{
                 // new record
@@ -180,15 +211,17 @@ public class Task {
             if (rs.next()){
                 // record exists
                 rs.updateString("Key",key);
-                rs.updateDate("DateFirst",MyDates.JavaDateToSQLasDate(firstDate));
-                rs.updateDate("DateLast",MyDates.JavaDateToSQLasDate(lastDate));
+                rs.updateDate("TaskDate",MyDates.JavaDateToSQLasDate(taskDate));
                 rs.updateString("URN",urn);
                 rs.updateString("TaskType",taskType.getKey());
-                rs.updateString(Utilities.RemoveNonAlpha("Tasks"),tasks);
+                rs.updateString(Utilities.RemoveNonAlpha("TaskDesc"),taskDesc);
                 rs.updateString("UIDCreatedBy",createdBy.getUID());
                 rs.updateString("UIDEditedBy",editedBy.getUID());
+                rs.updateString("UIDCompletedBy",completedBy.getUID());
                 rs.updateTimestamp("DateCreated",MyDates.JavaDateTimeToSQLasDate(dateCreated));
                 rs.updateTimestamp("DateEdited",MyDates.JavaDateTimeToSQLasDate(dateEdited));
+                rs.updateTimestamp("DateCompleted",MyDates.JavaDateTimeToSQLasDate(dateCompleted));
+                rs.updateBoolean("Completed", completed);
                                  
                 rs.updateRow();
             }else{
@@ -199,15 +232,17 @@ public class Task {
                 key = Utilities.GenerateKey();
                 
                 rs.updateString("Key",key);
-                rs.updateDate("DateFirst",MyDates.JavaDateToSQLasDate(firstDate));
-                rs.updateDate("DateLast",MyDates.JavaDateToSQLasDate(lastDate));
+                rs.updateDate("TaskDate",MyDates.JavaDateToSQLasDate(taskDate));
                 rs.updateString("URN",urn);
                 rs.updateString("TaskType",taskType.getKey());
-                rs.updateString(Utilities.RemoveNonAlpha("Tasks"),tasks);
+                rs.updateString(Utilities.RemoveNonAlpha("TaskDesc"),taskDesc);
                 rs.updateString("UIDCreatedBy",createdBy.getUID());
                 rs.updateString("UIDEditedBy",editedBy.getUID());
+                rs.updateString("UIDCompletedBy",completedBy.getUID());
                 rs.updateTimestamp("DateCreated",MyDates.JavaDateTimeToSQLasDate(dateCreated));
                 rs.updateTimestamp("DateEdited",MyDates.JavaDateTimeToSQLasDate(dateEdited));
+                rs.updateTimestamp("DateCompleted",MyDates.JavaDateTimeToSQLasDate(dateCompleted));
+                rs.updateBoolean("Completed", completed);
                 
                 rs.insertRow();
             }
@@ -258,15 +293,17 @@ public class Task {
                     retVar[LoopVar] = new Task();
                                         
                     retVar[LoopVar].key  = rs.getString("Key");
-                    retVar[LoopVar].firstDate = rs.getDate("DateFirst");
-                    retVar[LoopVar].lastDate = rs.getDate("DateLast");
+                    retVar[LoopVar].taskDate = rs.getDate("DateFirst");
                     retVar[LoopVar].urn = rs.getString("URN");
                     retVar[LoopVar].taskType = new TaskTypes(rs.getString("TaskType"));
-                    retVar[LoopVar].tasks = Utilities.ReplaceNonAlpha(rs.getString("Tasks"));
+                    retVar[LoopVar].taskDesc = Utilities.ReplaceNonAlpha(rs.getString("TaskDesc"));
                     retVar[LoopVar].createdBy = new User(rs.getString("UIDCreatedBy"));
                     retVar[LoopVar].editedBy = new User(rs.getString("UIDEditedBy"));
+                    retVar[LoopVar].completedBy = new User(rs.getString("UIDCompletedBy"));
                     retVar[LoopVar].dateCreated = rs.getTimestamp("DateCreated");
                     retVar[LoopVar].dateEdited = rs.getTimestamp("DateEdited");
+                    retVar[LoopVar].dateCompleted = rs.getTimestamp("DateEdited");
+                    retVar[LoopVar].completed = rs.getBoolean("Completed");                                                                        
                 }
             }
             

@@ -30,7 +30,7 @@ public class UserDialog extends JDialog{
          */
         super(aFrame, JDialog.ModalityType.APPLICATION_MODAL);
         
-        Data = nUser;
+        Data = new User(nUser);
         StartUp();
         setResults();
         setCalculatedValues();
@@ -42,7 +42,7 @@ public class UserDialog extends JDialog{
          */
         super(null, JDialog.ModalityType.APPLICATION_MODAL);
         
-        Data = nUser;
+        Data = new User(nUser);
         StartUp();
         setResults();
         setCalculatedValues();

@@ -147,4 +147,15 @@ public class AdmissionType {
             
 
     }
+    
+    public static String findAdmTypeDesc(String code){
+        String retVar="";
+        AdmissionType[] list = AdmissionType.loadAllAdmissionTypes(true);
+        for(AdmissionType adm : list){
+            if(adm.getAdmType().equals(code)){
+                retVar = adm.getAdmTypeDesc();
+            }
+        }               
+        return retVar;
+    }
 }
