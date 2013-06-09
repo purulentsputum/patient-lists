@@ -30,7 +30,7 @@ public class Patients {
         this.lastName = lastName;
         this.firstName=firstName;
         setSex(sex);
-        this.dob=dob;
+        this.dob=new Date(dob.getTime());
         this.urn=urn;
     }
     Patients (Patients newPatient){
@@ -69,7 +69,7 @@ public class Patients {
         return dob;
     }
     public String getOneLineDetails(){
-        return lastName + ", " + firstName + "  " + dob + "  " + sex + "  " + urn; 
+        return lastName + ", " + firstName + "  " + MyDates.ConvertDateToString(dob) + "  " + sex + "  " + urn; 
     }
     //setters
     public void setLastName (String lastName){

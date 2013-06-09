@@ -11,6 +11,7 @@ import java.util.logging.Logger;
  *
  * @author ross sellars
  * @created 20/05/2013 20:40
+ * @edited 09/06/2013 added defensive copy and loadLatestAdmission()
  */
 public class Admissions {
     private Date admDate;
@@ -47,6 +48,34 @@ public class Admissions {
     }
     Admissions (Admissions adm){
         //defensive copy
+        admDate= new Date(adm.getAdmDate().getTime());
+        admNo = adm.getAdmNo();
+        admTime = adm.getAdmTime();
+        admType = adm.getAdmType();
+        admUnit = adm.getAdmUnit();
+        admWard = adm.getAdmWard();
+        bed = adm.getBed();
+        bedDays=adm.getBedDays();
+        bedHours = adm.getBedHours();
+        dateLastMoved = new Date(adm.getDateLastMoved().getTime());
+        destination = adm.getDestination();
+        if(adm.getDischargeDate()!=null){
+            dischargeDate = new Date(adm.getDischargeDate().getTime());
+        }else{
+            dischargeDate = null;
+        }        
+        dischargeStatus = adm.getDischargeStatus();
+        dischargeTime = adm.getDischargeTime();
+        dischargeUnit = adm.getDischargeUnit();
+        dischargeWard = adm.getDischargeWard();
+        drAdmitting = adm.getDrAdmitting();
+        drReferringAddress = adm.getDrReferringAddress();
+        drReferringName = adm.getDrReferringName();
+        drReferringPostCode = adm.getDrReferringPostCode();
+        drReferringSuburb = adm.getDrReferringSuburb();
+        drTreating = adm.getDrTreating();
+        episodes = adm.getEpisodes();
+        urn = adm.getUrn();
     }
     private void setDefaults(){
         admDate= null;
@@ -154,6 +183,15 @@ public class Admissions {
         String admDesc = new AdmissionType(admType).getAdmTypeDesc();
         return "Adm: " + MyDates.ConvertDateToString(admDate) + " ("+bedDays+" days) | " + dischargeWard + " / " + bed +" | " + dischargeUnit
                 + " | "+ drTreating +" | " + admDesc;
+    }
+    public String getWardBed(){
+        String retVar;
+        if(this.dischargeStatus.length()>0){
+            retVar = this.dischargeWard + " / " + bed;
+        }else{
+            retVar = "D/C";
+        }
+        return retVar;
     }
     
     //setters
@@ -307,7 +345,10 @@ public class Admissions {
                 rs.updateString("AdmType",admType);
                 rs.updateString("AdmUnit",admUnit);
                 rs.updateString("AdmWard",admWard);
-                rs.updateString("Bed",bed);                               
+                // do not save blank bed - will allow for manual entry of bed and not override it on update
+                if((bed !=null)&&(bed.length()>0)){
+                    rs.updateString("Bed",bed); 
+                }                                              
                 rs.updateInt("BedDays",bedDays);
                 rs.updateInt("BedHours",bedHours);
                 rs.updateDate("DateLastMoved",MyDates.JavaDateToSQLasDate(dateLastMoved));
@@ -435,7 +476,62 @@ public class Admissions {
         return retVar;
      
     }
+     
+    public static Admissions loadLatestPatientAdmissions(String urn){
+        /**
+         * loads individual data
+         *  @param urn patients UR Number
+         */
         
+        Admissions retVar = new  Admissions();
+        String strSQL = "SELECT tbl_002_admissions.* " +
+                "FROM tbl_002_admissions  " +
+                "WHERE(tbl_002_admissions.URN = '" + urn + "') " + 
+                "ORDER BY tbl_002_admissions.AdmDate DESC;";
+        try {
+            // get resultset
+            DatabaseInpatients dbData = new DatabaseInpatients(strSQL,true);
+            ResultSet rs = dbData.getResultSet(); 
+            
+            rs.beforeFirst();
+            
+            if(rs.next()){                               
+                               
+                    retVar.admDate=rs.getDate("AdmDate");
+                    retVar.admNo=rs.getString("AdmNo");
+                    retVar.admTime=rs.getString("AdmTime");
+                    retVar.admType=rs.getString("AdmType");
+                    retVar.admUnit=rs.getString("AdmUnit");
+                    retVar.admWard=rs.getString("AdmWard");
+                    retVar.bed=rs.getString("Bed");                               
+                    retVar.bedDays=rs.getInt("BedDays");
+                    retVar.bedHours=rs.getInt("BedHours");
+                    retVar.dateLastMoved=rs.getDate("DateLastMoved");
+                    retVar.destination=rs.getString("Destination");
+                    retVar.dischargeDate=rs.getDate("DischargeDate");
+                    retVar.dischargeStatus=rs.getString("DischargeStatus");
+                    retVar.dischargeTime=rs.getString("DischargeTime");
+                    retVar.dischargeUnit=rs.getString("DischargeUnit");
+                    retVar.dischargeWard=rs.getString("DischargeWard");
+                    retVar.drAdmitting=rs.getString("DrAdmitting");
+                    retVar.drReferringAddress=rs.getString("DrReferringAddress");
+                    retVar.drReferringName=rs.getString("DrReferringName");
+                    retVar.drReferringPostCode=rs.getString("DrReferringPostCode");
+                    retVar.drReferringSuburb=rs.getString("DrReferringSuburb");
+                    retVar.drTreating=rs.getString("DrTreating");
+                    retVar.episodes=rs.getInt("Episodes");
+                    retVar.urn=rs.getString("URN");                               
+                
+            }
+            rs.close();            
+            
+        } catch (SQLException ex) {
+            Logger.getLogger("LoadLatestAdmission").log(Level.SEVERE, null, ex);
+        }
+        
+        return retVar;
+     
+    }
         
         
 }

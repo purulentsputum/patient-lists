@@ -61,7 +61,7 @@ public class User {
     }
     private void loadDefaults(){
         uid="";
-        name="NewUser";
+        name="";
         defaultWard="none";
         defaultUnit="none";
         defaultCons="none";

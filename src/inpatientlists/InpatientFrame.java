@@ -22,6 +22,7 @@ public class InpatientFrame extends javax.swing.JFrame {
        startUp();
     }
     private void startUp(){
+        
         initComponents();
         
         jLstCons.setVisible(false);
@@ -312,6 +313,7 @@ public class InpatientFrame extends javax.swing.JFrame {
         patientList = PatientAdmissions.loadCurrentInpatientsFiltered(strSQL);
         
         Admissions[] admList;
+        Task[] taskList;
         Note note;
         String tempVar;
                 
@@ -320,6 +322,7 @@ public class InpatientFrame extends javax.swing.JFrame {
             DefaultMutableTreeNode root = new DefaultMutableTreeNode("Patients");
             DefaultMutableTreeNode patient;
             DefaultMutableTreeNode patientDetail;
+            DefaultMutableTreeNode patientSubDetail;
             
             for (int intLoopVar=0 ; intLoopVar < patientList.length ; intLoopVar++) {
                 tempVar = Integer.toString(intLoopVar+1) + ": " + patientList[intLoopVar].getPatient().getOneLineDetails();
@@ -346,13 +349,22 @@ public class InpatientFrame extends javax.swing.JFrame {
                     
                     
                     //Tasks
-                    patient.add(new DefaultMutableTreeNode("Tasks"));
-                    
+                    patientDetail=new DefaultMutableTreeNode("Tasks");
+                        taskList = new Task[0];
+                        taskList = Task.loadAllPatientTasks( patientList[intLoopVar].getPatient().getURN(),true);
+                        for(int i=0;i<taskList.length;i++ ){
+                            patientSubDetail = new DefaultMutableTreeNode( MyDates.ConvertDateToString(taskList[i].getDate()) );
+                            patientSubDetail.add(new DefaultMutableTreeNode( taskList[i].getTaskDesc() ));
+                            patientSubDetail.add(new DefaultMutableTreeNode( taskList[i].getUsersOneLine() ));
+                            patientDetail.add(patientSubDetail);
+                        }    
+                    patient.add(patientDetail);
                     //GP
                     patientDetail=new DefaultMutableTreeNode("Refering Doctor");
                     patientDetail.add(new DefaultMutableTreeNode(patientList[intLoopVar].getAdmission().getReferingDoctorOneLine() ));
                     patient.add(patientDetail);
                     // etc etc
+                    //patient.add(new DefaultMutableTreeNode("Tasks"));
                 
 
             }
@@ -360,7 +372,7 @@ public class InpatientFrame extends javax.swing.JFrame {
             myTreeModel.setRoot(root);
     }
     
-     private int GetNodeIndex() {
+     private int getNodeIndex() {
 
         // get the full path eg [Patients, 1:Bloggs,joe]
         String strNodePath = jTreePatients.getAnchorSelectionPath().toString();
@@ -828,7 +840,7 @@ public class InpatientFrame extends javax.swing.JFrame {
     }//GEN-LAST:event_jTreePatientsValueChanged
 
     private void jBtnPtNotesActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jBtnPtNotesActionPerformed
-        int node = GetNodeIndex();
+        int node = getNodeIndex();
         if (node>0){
             //patient selected
             
@@ -840,11 +852,27 @@ public class InpatientFrame extends javax.swing.JFrame {
     }//GEN-LAST:event_jBtnPtNotesActionPerformed
 
     private void jBtnPtTaskActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jBtnPtTaskActionPerformed
-        // TODO add your handling code here:
+        int node = getNodeIndex();
+        if (node>0){
+            //patient selected
+            TaskPatientDialog dialog = new TaskPatientDialog((JFrame)this, patientList[node-1].getPatient().getURN());            
+            boolean dialogResult = dialog.ReturnCompleted();
+            if (dialogResult) {
+                //refresh view            
+                populatePatientList(getSQL());
+            }
+        }                      
     }//GEN-LAST:event_jBtnPtTaskActionPerformed
 
     private void jBtnAllTasksActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jBtnAllTasksActionPerformed
-        // TODO add your handling code here:
+        
+            TaskDateDialog dialog = new TaskDateDialog((JFrame)this);            
+            boolean dialogResult = dialog.ReturnCompleted();
+            if (dialogResult) {
+                //refresh view            
+                populatePatientList(getSQL());
+            }
+          
     }//GEN-LAST:event_jBtnAllTasksActionPerformed
 
     private void jBtnExportActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jBtnExportActionPerformed

@@ -19,7 +19,8 @@ public class Task {
     private String key;
     private Date taskDate;
     private String urn;
-    private TaskTypes taskType;
+    private TaskType taskType;
+    private String taskTypeKey;
     private String taskDesc;
     private User createdBy;
     private User editedBy;
@@ -42,7 +43,7 @@ public class Task {
         taskDate=new Date(value.getDate().getTime());
         urn=value.getURN();
         taskDesc=value.getTaskDesc();
-        taskType = new TaskTypes(value.getTaskType());
+        taskType = TaskType.getTaskTypeFromKey(value.getTaskType().getKey());
         createdBy= new User(value.getCreatedBy());
         editedBy=new User(value.getEditedBy());
         completedBy = new User(value.getCompletedBy());
@@ -56,12 +57,12 @@ public class Task {
         taskDate=MyDates.CurrentDate();
         urn="";
         taskDesc=" ";
-        taskType = new TaskTypes();
+        taskType = TaskType.getDefault();
         createdBy= new User(User.CurrentUser.getUID());
         editedBy=new User(User.CurrentUser.getUID());
         completedBy = new User();
-        dateCreated=MyDates.CurrentDate();
-        dateEdited=MyDates.CurrentDate();
+        dateCreated=MyDates.CurrentDateTime();
+        dateEdited=MyDates.CurrentDateTime();
         dateCompleted = null;
         completed = false;
     }
@@ -78,7 +79,7 @@ public class Task {
     public String getTaskDesc(){
         return taskDesc;
     }
-    public TaskTypes getTaskType(){
+    public TaskType getTaskType(){
         return taskType;
     }
     public Date getDateCreated(){
@@ -102,6 +103,17 @@ public class Task {
     public Boolean isCompleted(){
         return completed;
     }
+    public String getUsersOneLine(){
+        String retVar =  "created by: " + this.createdBy.getName() + " on " + MyDates.ConvertDateTimeToString(this.dateCreated);
+        if (this.editedBy.getName().length()>1){
+            retVar = retVar + "; edited by: " + this.editedBy.getName() + " on " + MyDates.ConvertDateTimeToString(this.getDateEdited());
+        }
+        if (completed){
+            retVar = retVar + "; completed by: " + this.completedBy.getName() + " on " + MyDates.ConvertDateTimeToString(this.getDateCompleted());
+        }
+        return retVar;
+    }
+    
     //setters
     public void setKey(String key){
         this.key=key;
@@ -112,11 +124,11 @@ public class Task {
     public void setURN(String urn){
         this.urn = urn;
     }
-    public void setTaskType(TaskTypes taskType){
-        this.taskType = new TaskTypes(taskType);
+    public void setTaskType(TaskType taskType){
+        this.taskType = TaskType.getTaskTypeFromKey(taskType.getKey());
     }
     public void setTaskType(String key){
-        this.taskType=new TaskTypes(key);
+        this.taskType= TaskType.getTaskTypeFromKey(key);
     }
     public void setTaskDesc(String tasks){
         this.taskDesc = tasks;
@@ -172,7 +184,7 @@ public class Task {
                 this.key  = rs.getString("Key");
                 this.taskDate = rs.getDate("TaskDate");
                 this.urn = rs.getString("URN");
-                this.taskType = new TaskTypes(rs.getString("TaskType"));
+                this.taskType = TaskType.getTaskTypeFromKey(rs.getString("TaskType"));
                 this.taskDesc = Utilities.ReplaceNonAlpha(rs.getString("TaskDesc"));
                 this.createdBy = new User(rs.getString("UIDCreatedBy"));
                 this.editedBy = new User(rs.getString("UIDEditedBy"));
@@ -253,25 +265,78 @@ public class Task {
         }
     }
     public static Task[] loadAllPatientTasks(String urn){
-        return loadAllPatientTasks(urn,false);
+        String strSQL = "SELECT tbl_110_tasks.* " +
+                "FROM tbl_110_tasks ;  ";
+        return loadSelectedTasks(strSQL);
     }
+    public static Task[] loadSelectedPatientTasks(String urn, String taskTypeKey, Boolean futureOnly){
+        String strSQL;
+        
+        if (futureOnly){
+             strSQL = "SELECT tbl_110_tasks.* " +
+                "FROM tbl_110_tasks  " +
+                "WHERE(((tbl_110_tasks.URN) = '" +urn +"') " +
+                "AND ((tbl_110_tasks.TaskType) = '" + taskTypeKey + "') " +
+                "AND ((tbl_110_tasks.TaskDate) >= '"+ MyDates.JavaDateToSQLasString(MyDates.CurrentDate()) + "')) " +
+                "ORDER BY Tbl_110_tasks.TaskDate DESC, Tbl_110_tasks.TaskType;";
+         }else{
+             strSQL = "SELECT tbl_110_tasks.* " +
+                "FROM tbl_110_tasks  " +
+                "WHERE(((tbl_110_tasks.URN) = '" +urn +"') " +
+                "AND ((tbl_110_tasks.TaskType) = '" + taskTypeKey + "')) "+
+                "ORDER BY Tbl_110_tasks.TaskDate DESC, Tbl_110_tasks.TaskType;";
+               
+         }  
+         return loadSelectedTasks(strSQL);
+    }
+    
     public static Task[] loadAllPatientTasks(String urn,Boolean futureOnly){
         /**
          * loads individual data
          *  @param futureOnly a flag to indicate if all tasks or only future ones are loaded
          */
          String strSQL;
-         Task[] retVar = new Task[0];
          
          if (futureOnly){
              strSQL = "SELECT tbl_110_tasks.* " +
                 "FROM tbl_110_tasks  " +
-                "WHERE(tbl_110_tasks.URN = '" +urn +"');";
+                "WHERE(((tbl_110_tasks.URN) = '" +urn +"') " +
+                " AND ((tbl_110_tasks.TaskDate) >= '"+ MyDates.JavaDateToSQLasString(MyDates.CurrentDate()) + "')) "+
+                "ORDER BY Tbl_110_tasks.TaskDate DESC, Tbl_110_tasks.TaskType;";
          }else{
              strSQL = "SELECT tbl_110_tasks.* " +
-                "FROM tbl_110_tasks ;  "; 
-         }
-                
+                "FROM tbl_110_tasks  " +
+                "WHERE(tbl_110_tasks.URN = '" +urn +"') "+
+                "ORDER BY Tbl_110_tasks.TaskDate DESC, Tbl_110_tasks.TaskType;";
+         }         
+         return loadSelectedTasks(strSQL);         
+    }
+    
+    public static Task[] loadTasksOnADay(Date nDate){
+         String strSQL = "SELECT tbl_110_tasks.* " +
+                "FROM tbl_110_tasks " +
+                "WHERE ((tbl_110_tasks.TaskDate) = '" + MyDates.JavaDateToSQLasString(nDate) + "') "+
+                "ORDER BY Tbl_110_tasks.TaskDate DESC, Tbl_110_tasks.TaskType;";
+        return loadSelectedTasks(strSQL);
+    }
+    
+    public static Task[] loadTasksOnADay(Date nDate,String taskTypeKey){
+         String strSQL = "SELECT tbl_110_tasks.* " +
+                "FROM tbl_110_tasks " +
+                 "WHERE (((tbl_110_tasks.TaskDate) = '" + MyDates.JavaDateToSQLasString(nDate) + "')" +
+                 "AND ((tbl_110_tasks.TaskType) = '" + taskTypeKey + "')) "+
+                 "ORDER BY Tbl_110_tasks.TaskDate DESC, Tbl_110_tasks.TaskType;";
+        return loadSelectedTasks(strSQL);
+    }
+    
+    private static Task[] loadSelectedTasks(String strSQL){
+        /*
+         * loads individual data
+         *  @param strSQL SQL statement
+         */
+        
+        Task[] retVar = new Task[0];
+                               
         try {
             // get resultset
             DatabaseInpatients dbData = new DatabaseInpatients(strSQL,true);
@@ -293,9 +358,9 @@ public class Task {
                     retVar[LoopVar] = new Task();
                                         
                     retVar[LoopVar].key  = rs.getString("Key");
-                    retVar[LoopVar].taskDate = rs.getDate("DateFirst");
+                    retVar[LoopVar].taskDate = rs.getDate("TaskDate");
                     retVar[LoopVar].urn = rs.getString("URN");
-                    retVar[LoopVar].taskType = new TaskTypes(rs.getString("TaskType"));
+                    retVar[LoopVar].taskType = TaskType.getTaskTypeFromKey(rs.getString("TaskType"));
                     retVar[LoopVar].taskDesc = Utilities.ReplaceNonAlpha(rs.getString("TaskDesc"));
                     retVar[LoopVar].createdBy = new User(rs.getString("UIDCreatedBy"));
                     retVar[LoopVar].editedBy = new User(rs.getString("UIDEditedBy"));
@@ -310,12 +375,10 @@ public class Task {
             rs.close();
 
             } catch (SQLException ex) {
-            Logger.getLogger("LoadAllTasks").log(Level.SEVERE, null, ex);
+                Logger.getLogger("LoadAllTasks").log(Level.SEVERE, null, ex);
             }
             return retVar;
-            
-            
-
+                        
     }
     
    

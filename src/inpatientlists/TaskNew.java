@@ -78,10 +78,10 @@ public class TaskNew {
                 tempKey = Utilities.GenerateKey();
                 
                 rs.updateString("Key",tempKey);
-                rs.updateDate("Date",MyDates.JavaDateToSQLasDate(loopDate));                
+                rs.updateDate("TaskDate",MyDates.JavaDateToSQLasDate(loopDate));                
                 rs.updateString("URN",task.getURN());
                 rs.updateString("TaskType",task.getTaskType().getKey());
-                rs.updateString(Utilities.RemoveNonAlpha("Tasks"),task.getTaskDesc());
+                rs.updateString(Utilities.RemoveNonAlpha("TaskDesc"),task.getTaskDesc());
                 rs.updateString("UIDCreatedBy",task.getCreatedBy().getUID());
                 rs.updateString("UIDEditedBy",task.getEditedBy().getUID());
                 rs.updateTimestamp("DateCreated",MyDates.JavaDateTimeToSQLasDate(task.getDateCreated()));

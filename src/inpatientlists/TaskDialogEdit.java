@@ -99,7 +99,7 @@ public class TaskDialogEdit extends JDialog{
                
         ;
         Data.setTaskDesc(this.jTxtTask.getText());
-        Data.setTaskType(taskTypes[this.jCboTaskType.getSelectedIndex()]);
+        Data.setTaskType(TaskType.getTaskTypeFromDesc((String)jCboTaskType.getSelectedItem()));
         Data.setDateEdited(MyDates.CurrentDateTime());
         Data.setEditedBy(User.CurrentUser);
 
@@ -112,17 +112,15 @@ public class TaskDialogEdit extends JDialog{
         jCboTaskType.removeAllItems();
         // generate list
         int defaultIndex = -1; 
-        int tempCount=0;
-        
-        taskTypes = TaskTypes.getArray();
-        
-        for (int i = 0;i<taskTypes.length;i++){
-            tempCount=i;
-            jCboTaskType.insertItemAt(taskTypes[i].getDesc(), i);            
+        int tempCount=-1;
+                 
+        for (TaskType tt: TaskType.values() ){
+            tempCount++;
+            jCboTaskType.insertItemAt(tt.getDesc(), tempCount);            
         }
                 
         // mark default as selected        
-        jCboTaskType.setSelectedIndex(TaskTypes.getDefault());   
+        jCboTaskType.setSelectedItem(TaskType.getDefault().getDesc()); 
         
     }
     
@@ -402,7 +400,6 @@ public class TaskDialogEdit extends JDialog{
     private javax.swing.JPanel jPanData;    
     
     Task Data;
-    TaskTypes[] taskTypes;
     boolean RetVar;
     Patients patient;
     

@@ -17,7 +17,7 @@ import java.util.Calendar;
 public class MyDates {
     
     public static final String DefaultTimeFormat = "HH:mm";
-    public static final String DefaultDateFormat = "dd MMM yyyy";
+    public static final String DefaultDateFormat = "dd-MMM-yyyy";
     public static final String DefaultDateTimeFormat = DefaultDateFormat + " " + DefaultTimeFormat;
 
 

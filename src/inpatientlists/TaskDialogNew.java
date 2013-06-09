@@ -6,6 +6,7 @@ import java.awt.Frame;
 import javax.swing.JDialog;
 import com.toedter.calendar.JCalendar;
 import java.util.Date;
+import javax.swing.JOptionPane;
 
 /**
  *
@@ -43,13 +44,12 @@ public class TaskDialogNew extends JDialog{
 
         initComponents();
         PopulateTaskTypeCombo();
-        jLblHeadCol1.setText(patient.getOneLineDetails());
+        jLblHeadCol1.setText(patient.getOneLineDetails());        
         
         Data = new TaskNew();
         
         pack();
-        setLocationRelativeTo(null);
-        
+        setLocationRelativeTo(null);        
         
     }
 
@@ -74,11 +74,11 @@ public class TaskDialogNew extends JDialog{
         /*
          * loads data into Data 
          */        
-               
+                
         Data = new TaskNew();
         Data.setFirstDate(jDateFirst.getDate());
         Data.setLastDate(jDateLast.getDate());
-        Data.getTask().setTaskType(taskTypes[this.jCboTaskType.getSelectedIndex()]);
+        Data.getTask().setTaskType( TaskType.getTaskTypeFromDesc((String)jCboTaskType.getSelectedItem()));
         Data.getTask().setTaskDesc(this.jTxtTask.getText());
         Data.getTask().setURN(patient.getURN());
         // the rest stay as new defaults
@@ -90,17 +90,15 @@ public class TaskDialogNew extends JDialog{
         jCboTaskType.removeAllItems();
         // generate list
         int defaultIndex = -1; 
-        int tempCount=0;
-        
-        taskTypes = TaskTypes.getArray();
-        
-        for (int i = 0;i<taskTypes.length;i++){
-            tempCount=i;
-            jCboTaskType.insertItemAt(taskTypes[i].getDesc(), i);            
+        int tempCount=-1;
+                 
+        for (TaskType tt: TaskType.values() ){
+            tempCount++;
+            jCboTaskType.insertItemAt(tt.getDesc(), tempCount);            
         }
                 
         // mark default as selected        
-        jCboTaskType.setSelectedIndex(TaskTypes.getDefault());   
+        jCboTaskType.setSelectedItem(TaskType.getDefault().getDesc());   
         
     }
     
@@ -156,8 +154,11 @@ public class TaskDialogNew extends JDialog{
         
         jCboTaskType.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2" }));
         jDateFirst.setDate(MyDates.CurrentDate());
-        jDateLast.setDate(MyDates.CurrentDate());              
-        jLblCreatedBy.setText(" ");
+        jDateLast.setDate(MyDates.CurrentDate()); 
+        jDateFirst.setDateFormatString(MyDates.DefaultDateFormat);
+        jDateLast.setDateFormatString(MyDates.DefaultDateFormat);
+        
+        jLblCreatedBy.setText(User.CurrentUser.getName());
         jLblDateCreated.setText(MyDates.ConvertDateTimeToString(MyDates.CurrentDateTime(),MyDates.DefaultDateTimeFormat));
                 
         jLblHeadCol1.setText("Task Details:");
@@ -267,6 +268,7 @@ public class TaskDialogNew extends JDialog{
     }
 
     private void jBtnSaveActionPerformed(java.awt.event.ActionEvent evt) {
+        getResults();
         FinishUp();
     }
 
@@ -305,7 +307,6 @@ public class TaskDialogNew extends JDialog{
     private javax.swing.JPanel jPanData;    
     
     TaskNew Data;
-    TaskTypes[] taskTypes;
     boolean RetVar;
     Patients patient;
     

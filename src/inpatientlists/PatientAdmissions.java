@@ -53,6 +53,7 @@ public class PatientAdmissions {
                 "WHERE (((Tbl_001_Patients.URN)='" + urn +"'));" ;
          return loadCurrentInpatientsFiltered(strSQL);
     }
+    
     public static PatientAdmissions[] loadCurrentInpatients(){
         String strSQL = "SELECT Tbl_001_Patients.*, Tbl_002_Admissions.* " +
             "FROM Tbl_001_Patients " +
