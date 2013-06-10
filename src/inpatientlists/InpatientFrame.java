@@ -352,10 +352,10 @@ public class InpatientFrame extends javax.swing.JFrame {
                     patientDetail=new DefaultMutableTreeNode("Tasks");
                         taskList = new Task[0];
                         taskList = Task.loadAllPatientTasks( patientList[intLoopVar].getPatient().getURN(),true);
-                        for(int i=0;i<taskList.length;i++ ){
-                            patientSubDetail = new DefaultMutableTreeNode( MyDates.ConvertDateToString(taskList[i].getDate()) );
-                            patientSubDetail.add(new DefaultMutableTreeNode( taskList[i].getTaskDesc() ));
-                            patientSubDetail.add(new DefaultMutableTreeNode( taskList[i].getUsersOneLine() ));
+                        for (Task task:taskList){
+                            patientSubDetail = new DefaultMutableTreeNode( MyDates.ConvertDateToString(task.getDate()) );
+                            patientSubDetail.add(new DefaultMutableTreeNode( task.getTaskDesc() ));
+                            patientSubDetail.add(new DefaultMutableTreeNode( task.getUsersOneLine() ));
                             patientDetail.add(patientSubDetail);
                         }    
                     patient.add(patientDetail);
@@ -876,7 +876,7 @@ public class InpatientFrame extends javax.swing.JFrame {
     }//GEN-LAST:event_jBtnAllTasksActionPerformed
 
     private void jBtnExportActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jBtnExportActionPerformed
-        // TODO add your handling code here:
+        
         Object[] options = {"Word", "XML", "HTML"};
         String retVar = (String)JOptionPane.showInputDialog(
                 (JFrame)this,
@@ -889,13 +889,13 @@ public class InpatientFrame extends javax.swing.JFrame {
         if ((retVar != null)&&(retVar.length()>0)){
             switch (retVar){
                 case "Word":
-                    ExportList.Word(patientList, sqlDesc);
+                    ExportList.PatientList.Word(patientList, sqlDesc);
                     break;
                 case "XML":
-                    ExportList.XML(patientList, sqlDesc);
+                    ExportList.PatientList.XML(patientList, sqlDesc);
                     break;
                 case "HTML":
-                    ExportList.HTML(patientList, sqlDesc);
+                    ExportList.PatientList.HTML(patientList, sqlDesc);
                     break;
                 default:
                     JOptionPane.showMessageDialog(null, "You selected " + retVar + " - but I haven't got around to this yet");

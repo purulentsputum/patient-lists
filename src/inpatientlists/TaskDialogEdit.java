@@ -136,6 +136,7 @@ public class TaskDialogEdit extends JDialog{
         
         jBtnSave = new javax.swing.JButton();
         jBtnCancel = new javax.swing.JButton();
+        jBtnComplete = new javax.swing.JButton();
         
         jLblHeadCol1 = new javax.swing.JLabel();
                          

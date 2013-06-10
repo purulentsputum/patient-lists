@@ -31,7 +31,8 @@ CREATE TABLE `tbl_001_patients` (
   `GivenNames` varchar(45) DEFAULT NULL,
   `Postcode` varchar(5) DEFAULT NULL,
   `Surname` varchar(45) DEFAULT NULL,
-  PRIMARY KEY (`URN`)
+  PRIMARY KEY (`URN`),
+  UNIQUE KEY `URN_UNIQUE` (`URN`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -116,6 +117,92 @@ CREATE TABLE `tbl_005_doctorlist` (
   PRIMARY KEY (`DrCode`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `tbl_010_admissiontypes`
+--
+
+DROP TABLE IF EXISTS `tbl_010_admissiontypes`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `tbl_010_admissiontypes` (
+  `AdmType` varchar(10) NOT NULL,
+  `AdmDesc` varchar(45) DEFAULT NULL,
+  `Active` tinyint(1) DEFAULT NULL,
+  PRIMARY KEY (`AdmType`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `tbl_100_notes`
+--
+
+DROP TABLE IF EXISTS `tbl_100_notes`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `tbl_100_notes` (
+  `Key` char(30) NOT NULL,
+  `URN` varchar(10) DEFAULT NULL,
+  `CreatedBy` varchar(15) DEFAULT NULL,
+  `DateCreated` datetime DEFAULT NULL,
+  `DateEdited` datetime DEFAULT NULL,
+  `EditedBy` varchar(15) DEFAULT NULL,
+  `Note` varchar(255) DEFAULT NULL,
+  PRIMARY KEY (`Key`),
+  UNIQUE KEY `Key_UNIQUE` (`Key`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `tbl_110_tasks`
+--
+
+DROP TABLE IF EXISTS `tbl_110_tasks`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `tbl_110_tasks` (
+  `Key` char(30) NOT NULL,
+  `TaskDate` date DEFAULT NULL,
+  `URN` varchar(45) DEFAULT NULL,
+  `TaskDesc` varchar(255) DEFAULT NULL,
+  `UIDCreatedBy` varchar(15) DEFAULT NULL,
+  `DateCreated` datetime DEFAULT NULL,
+  `UIDEditedBy` varchar(15) DEFAULT NULL,
+  `DateEdited` datetime DEFAULT NULL,
+  `UIDCompletedBy` varchar(15) DEFAULT NULL,
+  `DateCompleted` datetime DEFAULT NULL,
+  `Completed` tinyint(1) DEFAULT NULL,
+  `TaskType` varchar(45) DEFAULT NULL,
+  PRIMARY KEY (`Key`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `tbl_900_users`
+--
+
+DROP TABLE IF EXISTS `tbl_900_users`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `tbl_900_users` (
+  `UID` varchar(15) NOT NULL,
+  `Name` varchar(45) DEFAULT NULL,
+  `Admin` tinyint(1) DEFAULT '0',
+  `DefaultWard` varchar(45) DEFAULT NULL,
+  `DefaultUnit` varchar(45) DEFAULT NULL,
+  `DefaultCons` varchar(45) DEFAULT NULL,
+  `Locked` tinyint(1) DEFAULT '1',
+  `Active` tinyint(1) DEFAULT '0',
+  `Created` datetime DEFAULT NULL,
+  `LastValidLogin` datetime DEFAULT NULL,
+  `LastInvalidLogin` datetime DEFAULT NULL,
+  `ValidLogins` int(11) DEFAULT NULL,
+  `InvalidLogins` int(11) DEFAULT NULL,
+  `Limited` tinyint(1) DEFAULT '1',
+  PRIMARY KEY (`UID`),
+  UNIQUE KEY `UID_UNIQUE` (`UID`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
@@ -126,4 +213,4 @@ CREATE TABLE `tbl_005_doctorlist` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2013-05-24 10:40:33
+-- Dump completed on 2013-06-10 23:03:24

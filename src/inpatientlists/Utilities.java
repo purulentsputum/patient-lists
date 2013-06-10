@@ -10,12 +10,14 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.JFileChooser;
 
 /**
  *
  * @author rosssellars
  * @created 20/05/2013 22:41
  * @edited 24/05/2013 12:00 added static variables and generatekey()
+ * @edited 10/06/2013 added selectDirectory() for data export
  */
 public class Utilities {
     public static final String NewLine  = System.getProperty("line.separator");
@@ -254,6 +256,16 @@ public class Utilities {
             retVar = "";
         }
         return retVar;
+    }
+    
+    public static String selectDirectory(){
+        JFileChooser f = new JFileChooser();
+        f.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY); 
+        f.showSaveDialog(null);
+
+        //return (f.getCurrentDirectory().getPath());  //returns the directory of the selected folder.
+        return(f.getSelectedFile().getPath());      //returns the selected folder
+        
     }
     
 }
