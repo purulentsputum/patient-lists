@@ -15,6 +15,7 @@ import javax.swing.JOptionPane;
  * @created 20/05/2013 23:19
  * @edited 24/05/2013 13:45 added SQL filter to name field and updated user table items
  * @edited 26/05/2013 10:28 added defensive copy code
+ * @edited 11/06/2013 added TOTP secret key
  */
 public class User {
     private String uid;
@@ -32,6 +33,7 @@ public class User {
     private Integer numberValidLogins;
     private Integer numberInvalidLogins; //number since last valid login
     private Boolean newUser;            // flags if a user is new 
+    private String TOTPKey;
     
     public static User CurrentUser;
     
@@ -58,6 +60,7 @@ public class User {
         this.numberValidLogins =user.getNumberValidLogins();
         this.numberInvalidLogins =user.getNumberInvalidLogins();
         this.newUser = user.isNewUser();
+        this.TOTPKey=user.getTOTPKey();
     }
     private void loadDefaults(){
         uid="";
@@ -74,7 +77,8 @@ public class User {
         dateLastInvalidLogin = MyDates.CurrentDateTime();
         numberValidLogins =0;
         numberInvalidLogins =0;
-        newUser = true;                
+        newUser = true; 
+        TOTPKey = "not set";
     }
     
     //getters
@@ -122,6 +126,9 @@ public class User {
     } 
     public Boolean isNewUser(){
         return newUser;
+    }
+    public String getTOTPKey(){
+        return TOTPKey;
     }
         
         
@@ -172,6 +179,9 @@ public class User {
     public void setNewUser(Boolean newUser){
         this.newUser=newUser;
     }
+    public void setTOTPKey(String TOTPKey){
+        this.TOTPKey=TOTPKey;
+    }
     //
     public void incrementNumberValidLogins(){
         numberValidLogins++;
@@ -216,6 +226,7 @@ public class User {
                 this.dateLastInvalidLogin = rs.getTimestamp("LastInvalidLogin");
                 this.numberValidLogins =rs.getInt("ValidLogins");
                 this.numberInvalidLogins =rs.getInt("InvalidLogins");
+                this.TOTPKey = rs.getString("TOTPKey");
                 this.newUser=false;
             }else{
                 // new record
@@ -261,6 +272,7 @@ public class User {
                 rs.updateTimestamp("LastInvalidLogin",MyDates.JavaDateTimeToSQLasDate(dateLastInvalidLogin));
                 rs.updateInt("ValidLogins",numberValidLogins);
                 rs.updateInt("InvalidLogins",numberInvalidLogins);
+                rs.updateString("TOTPKey", TOTPKey);
                                  
                 rs.updateRow();
             }else{
@@ -282,6 +294,7 @@ public class User {
                 rs.updateTimestamp("LastInvalidLogin",MyDates.JavaDateTimeToSQLasDate(dateLastInvalidLogin));
                 rs.updateInt("ValidLogins",numberValidLogins);
                 rs.updateInt("InvalidLogins",numberInvalidLogins);
+                rs.updateString("TOTPKey", TOTPKey);
                 
                 rs.insertRow();
             }
@@ -292,6 +305,7 @@ public class User {
             Logger.getLogger("saveUser").log(Level.SEVERE, null, ex);
         }
     }
+    
     public static User[] loadAllUsers(){
         return loadAllUsers(false);
     }
@@ -311,6 +325,17 @@ public class User {
              strSQL = "SELECT tbl_900_users.* " +
                 "FROM tbl_900_users ;  "; 
          }
+                      
+         return loadUserData(strSQL);
+                      
+    }
+    private static User[] loadUserData(String strSQL){
+        /**
+         * loads  user list based on SQL statement provided
+         *  @param strSQL preprepared statement
+         */
+         
+        User[] retVar = new User[0];                 
                 
         try {
             // get resultset
@@ -344,19 +369,34 @@ public class User {
                     retVar[LoopVar].dateLastLogin = rs.getTimestamp("LastValidLogin");
                     retVar[LoopVar].dateLastInvalidLogin = rs.getTimestamp("LastInvalidLogin");
                     retVar[LoopVar].numberValidLogins =rs.getInt("ValidLogins");
-                    retVar[LoopVar].numberInvalidLogins =rs.getInt("InvalidLogins");       
+                    retVar[LoopVar].numberInvalidLogins =rs.getInt("InvalidLogins");  
+                    retVar[LoopVar].TOTPKey =rs.getString("TOTPKey");
                 }
             }
             
             rs.close();
 
             } catch (SQLException ex) {
-            Logger.getLogger("LoadAllUsers").log(Level.SEVERE, null, ex);
+            Logger.getLogger("LoadUserData").log(Level.SEVERE, null, ex);
             }
             return retVar;
-            
-            
-
+    }
+    public static User[] loadAllUsers(Boolean locked, Boolean limited){
+        String strSQL="";
+        if ((locked)&&(limited)){
+            // both locked and limited
+            strSQL = "WHERE(((tbl_900_users.Locked) = 1) AND ((tbl_900_users.Limited) = 1))";
+        }else if(locked){
+            // locked not limited
+            strSQL = "WHERE((tbl_900_users.Locked) = 1)";
+        }else if(limited){
+            // limited not locked
+            strSQL = "WHERE((tbl_900_users.Limited) = 1)";
+        }
+        strSQL= "SELECT tbl_900_users.* FROM tbl_900_users "  + strSQL +";";
+        
+       return loadUserData(strSQL);
+        
     }
     
    

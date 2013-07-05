@@ -104,6 +104,14 @@ public class Utilities {
             }
             return retVar;
     }
+    public static void upDateUnitList(){
+        // called after inpatient list update to current inpatients
+        String strSQL = "SELECT Tbl_002_Admissions.DischargeUnit FROM Tbl_002_Admissions " +
+                "GROUP BY Tbl_002_Admissions.DischargeUnit " +
+                "WHERE ((DischargeUnit.DischargeStatus)='' );";
+        
+    
+    }
     
     static String GenerateKey () {
         /**

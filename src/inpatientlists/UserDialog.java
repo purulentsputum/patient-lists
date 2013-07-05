@@ -113,6 +113,7 @@ public class UserDialog extends JDialog{
         jChkAdmin.setSelected(Data.isAdmin()); 
         jChkLocked.setSelected(Data.isLocked());
         jChkLimited.setSelected(Data.isLimited());
+        jTxtTOTPKey.setText(Data.getTOTPKey());
                         
     }
     private void getResults(){
@@ -136,6 +137,7 @@ public class UserDialog extends JDialog{
             //out of bounts which means none selected
             Data.setDefaultConsultant("none");
         }
+        Data.setTOTPKey(jTxtTOTPKey.getText()); 
         
         
     }
@@ -261,6 +263,7 @@ public class UserDialog extends JDialog{
         jLblRowB = new javax.swing.JLabel();
         jLblRowC = new javax.swing.JLabel();
         jLblRowD = new javax.swing.JLabel();
+        jLblRowE = new javax.swing.JLabel();
         
         jTxtName = new javax.swing.JTextField();    
         jCboWard = new javax.swing.JComboBox();
@@ -275,6 +278,7 @@ public class UserDialog extends JDialog{
         jChkAdmin = new javax.swing.JCheckBox();
         jChkLocked = new javax.swing.JCheckBox();
         jChkLimited = new javax.swing.JCheckBox();
+        jTxtTOTPKey = new javax.swing.JTextField();
 
         jPanData.setBorder(javax.swing.BorderFactory.createTitledBorder("Current User Profile"));
 
@@ -291,9 +295,19 @@ public class UserDialog extends JDialog{
         jLblRowB.setText("Administrator:");
         jLblRowC.setText("Access locked:");
         jLblRowD.setText("View only access:");
+        jLblRowE.setText("TOTP Key:");
         
-          
-        
+        //jTxtTOTPKey.setEchoChar('*'); //mask by default
+        jTxtTOTPKey.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusGained(java.awt.event.FocusEvent evt) {
+                jTxtTOTPKey.selectAll();
+            }            
+        });
+        jTxtTOTPKey.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                jTxtTOTPKeyMouseClicked(evt);
+            }            
+        });
 
         jTxtName.setText(" ");
         jTxtName.addFocusListener(new java.awt.event.FocusAdapter() {
@@ -353,7 +367,8 @@ public class UserDialog extends JDialog{
                 .addComponent(jLblRowA)
                 .addComponent(jLblRowB)
                 .addComponent(jLblRowC)
-                .addComponent(jLblRowD) 
+                .addComponent(jLblRowD)
+                .addComponent(jLblRowE)
                 .addComponent(jBtnCancel, javax.swing.GroupLayout.PREFERRED_SIZE, 76, javax.swing.GroupLayout.PREFERRED_SIZE)
                 )
                 .addGap(20, 20, 20)
@@ -366,12 +381,13 @@ public class UserDialog extends JDialog{
                 .addComponent(jLblUID)                
                 .addComponent(jLblDateCreated)
                 .addComponent(jLblDateLastValidLogin)
-                .addComponent(jLblDateLastInvalidLogin)
                 .addComponent(jLblNumberValidLogins)
+                .addComponent(jLblDateLastInvalidLogin)
                 .addComponent(jLblNumberInvalidLogins)
                 .addComponent(jChkAdmin)
                 .addComponent(jChkLocked)
-                .addComponent(jChkLimited) 
+                .addComponent(jChkLimited)
+                .addComponent(jTxtTOTPKey)
                 .addComponent(jBtnSave, javax.swing.GroupLayout.PREFERRED_SIZE, 72, javax.swing.GroupLayout.PREFERRED_SIZE)
                 )
                 .addGap(20, 20, 20));
@@ -418,12 +434,12 @@ public class UserDialog extends JDialog{
                 .addGap(6, 6, 6)
                 .addGroup(jPanDataLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                 .addComponent(jLblRow8)
-                .addComponent(jLblDateLastInvalidLogin)
+                .addComponent(jLblNumberValidLogins )
                 )
                 .addGap(6, 6, 6)
                 .addGroup(jPanDataLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                 .addComponent(jLblRow9)
-                .addComponent(jLblNumberValidLogins)
+                .addComponent(jLblDateLastInvalidLogin)
                 )
                 .addGap(6, 6, 6)
                 .addGroup(jPanDataLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -444,6 +460,11 @@ public class UserDialog extends JDialog{
                 .addGroup(jPanDataLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                 .addComponent(jLblRowD)
                 .addComponent(jChkLimited)
+                )
+                .addGap(6, 6, 6)
+                .addGroup(jPanDataLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addComponent(jLblRowE)
+                .addComponent(jTxtTOTPKey)
                 )
                 .addGap(6, 6, 6)
                 .addGroup(jPanDataLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
@@ -467,6 +488,10 @@ public class UserDialog extends JDialog{
                 .addComponent(jPanData, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE));
     }// </editor-fold>
 
+    private void jTxtTOTPKeyMouseClicked(java.awt.event.MouseEvent evt) {                                              
+        
+    } 
+    
     private void jBtnReportActionPerformed(java.awt.event.ActionEvent evt) {
         getResults(); //this loads teh data into teh variable (incase there has been any change)
         //jTxtNotes.setText(Data.calcDraftReport());
@@ -504,6 +529,7 @@ public class UserDialog extends JDialog{
     private javax.swing.JLabel jLblRowB;
     private javax.swing.JLabel jLblRowC;
     private javax.swing.JLabel jLblRowD;
+    private javax.swing.JLabel jLblRowE;
     
     private javax.swing.JTextField jTxtName;    
     private javax.swing.JComboBox jCboWard;
@@ -518,6 +544,7 @@ public class UserDialog extends JDialog{
     private javax.swing.JCheckBox jChkAdmin;
     private javax.swing.JCheckBox jChkLocked;
     private javax.swing.JCheckBox jChkLimited;
+    private javax.swing.JTextField jTxtTOTPKey;
     
         
     private javax.swing.JButton jBtnCancel;

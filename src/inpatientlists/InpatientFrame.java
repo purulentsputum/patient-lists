@@ -12,6 +12,7 @@ import javax.swing.tree.DefaultTreeModel;
  * @created 20/05/2013 19:01
  * @edited 02/06/2013 added counter to patients, 
  * @edited 07/06/2013 fixed filters and added surname
+ * @edited 11/06/2013 added admin button method
  */
 public class InpatientFrame extends javax.swing.JFrame {
 
@@ -907,9 +908,16 @@ public class InpatientFrame extends javax.swing.JFrame {
 
     private void jBtnAdminActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jBtnAdminActionPerformed
         if(User.CurrentUser.isAdmin()){
-            String topt = JOptionPane.showInputDialog(null, "Enter your One Time Password (TOTP):");
+            String totp = JOptionPane.showInputDialog(null, "Enter your One Time Password (TOTP):");
+            Boolean result = TOTP.validateGoogleAuthenticatorCode(User.CurrentUser.getTOTPKey(), Utilities.convertStringToInt(totp));
+            if((result)&&(User.CurrentUser.isAdmin())){                                
+                UserAdminDialog giveItToMe = new UserAdminDialog((JFrame)this);
+                boolean howDidItGo = giveItToMe.ReturnCompleted();
+                // return value not acted upon - no need
+            }else{
+                JOptionPane.showMessageDialog((JFrame)this, "Invalid one-time password", "Inpatient List Program", JOptionPane.INFORMATION_MESSAGE);
+            }
             
-            JOptionPane.showMessageDialog((JFrame)this, topt, "Inpatient List Program", JOptionPane.INFORMATION_MESSAGE);
         }
     }//GEN-LAST:event_jBtnAdminActionPerformed
 
